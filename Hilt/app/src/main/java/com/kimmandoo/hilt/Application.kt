@@ -7,8 +7,6 @@ import javax.inject.Inject
 @HiltAndroidApp
 class Application: Application() {
 
-    @Inject
-    lateinit var test: Test
     override fun onCreate() {
         super.onCreate()
 
