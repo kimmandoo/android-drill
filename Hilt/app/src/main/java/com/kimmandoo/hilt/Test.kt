@@ -1,5 +1,5 @@
 package com.kimmandoo.hilt
 
-class Test{
+class Test constructor(val id: String){
 
 }
