@@ -9,15 +9,20 @@ import androidx.core.view.WindowInsetsCompat
 import com.kimmandoo.hilt.practice_binding.Bar
 import com.kimmandoo.hilt.practice_binding.Foo
 import com.kimmandoo.hilt.practice_binding.TestQualifier
+import dagger.Lazy
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import javax.inject.Provider
 
 private const val TAG = "MainActivity"
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     @Inject
-    lateinit var foo: Foo // field 주입
+    lateinit var foo: Lazy<Foo> // Lazy
+    @Inject
+    lateinit var fooProvider: Provider<Foo>
+
     @Inject
     lateinit var bar: Bar
 
@@ -26,28 +31,29 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var test1: Test
 
-    @TestQualifier
-    @Inject
-    lateinit var test2: Test
+//    @TestQualifier
+//    @Inject
+//    lateinit var test2: Test
 
-    lateinit var testQualifier: Test
     @Inject // method 주입
     fun provideFoo(foo: Foo){ // super.onCreate 이후에 Inject되어 fooFun은 초기화 된 상태로 접근가능하다.
         fooFun = foo
     }
 
-    @Inject // method 주입
-    fun injectTest(@TestQualifier test: Test){
-        testQualifier = test
-    }
+//    @Inject // method 주입
+//    fun injectTest(@TestQualifier test: Test){
+//        testQualifier = test
+//    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        assert(foo.get().bar != null)
+        assert(fooProvider.get().bar != null)
+
         assert(this::foo.isInitialized)
         assert(this::bar.isInitialized)
         assert(this::fooFun.isInitialized)
-        assert(foo.bar != null)
-        Log.d(TAG, "onCreate: ${testQualifier.id}")
+
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
