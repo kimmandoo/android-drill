@@ -9,8 +9,11 @@ import androidx.core.view.WindowInsetsCompat
 import com.kimmandoo.hilt.practice_binding.Bar
 import com.kimmandoo.hilt.practice_binding.Foo
 import com.kimmandoo.hilt.practice_binding.TestQualifier
+import com.kimmandoo.hilt.practice_binds.Car
+import com.kimmandoo.hilt.practice_binds.FooT
 import dagger.Lazy
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.Optional
 import javax.inject.Inject
 import javax.inject.Provider
 
@@ -45,8 +48,17 @@ class MainActivity : AppCompatActivity() {
 //        testQualifier = test
 //    }
 
+
+    @Inject
+    lateinit var car: Car // 이거만 하면 MissingBinding 오류 뜸 Car에서 Engine은 따로 바인딩 된게 없어서
+
+    @Inject
+    lateinit var foot: Optional<FooT>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d(TAG, "onCreate: ${car.engine}")
+        
         assert(foo.get().bar != null)
         assert(fooProvider.get().bar != null)
 
