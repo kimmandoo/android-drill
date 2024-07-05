@@ -55,10 +55,19 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var foot: Optional<FooT>
 
+    @Inject
+    lateinit var str: Set<String>
+
+    @Inject
+    lateinit var mapInt: Map<Int, String>
+
+    @Inject
+    lateinit var mapClass: Map<Class<*>, String>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "onCreate: ${car.engine}")
-        
+        Log.d(TAG, "onCreate: ${str}")
         assert(foo.get().bar != null)
         assert(fooProvider.get().bar != null)
 
