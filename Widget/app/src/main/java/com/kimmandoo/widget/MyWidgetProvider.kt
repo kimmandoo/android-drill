@@ -4,12 +4,24 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.Looper
 import android.util.Log
 import android.widget.RemoteViews
+import androidx.core.content.ContextCompat
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
 
 private const val TAG = "MyWidgetProvider"
 class MyWidgetProvider : AppWidgetProvider() {
+
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+
     override fun onReceive(context: Context?, intent: Intent?) {
         super.onReceive(context, intent)
     }
@@ -21,6 +33,27 @@ class MyWidgetProvider : AppWidgetProvider() {
     ) {
         super.onUpdate(context, appWidgetManager, appWidgetIds)
         Log.d(TAG, "onUpdate: ")
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(context!!)
+
+        val locationRequest = LocationRequest.create().apply {
+            interval = 1000
+            fastestInterval = 500
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        }
+
+        val locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                locationResult.lastLocation?.let { location ->
+                    // 위치 정보를 사용하여 위젯 업데이트
+                    Log.d(TAG, "onLocationResult: ${location}")
+                }
+            }
+        }
+
+        // 위치 업데이트 요청
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
+        }
     }
 
     override fun onAppWidgetOptionsChanged(
