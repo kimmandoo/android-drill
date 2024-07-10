@@ -40,8 +40,9 @@ class MyWidgetProvider : AppWidgetProvider() {
         appWidgetIds: IntArray?
     ) {
         super.onUpdate(context, appWidgetManager, appWidgetIds)
+        val views = RemoteViews(context!!.packageName, R.layout.widget_layout)
         Log.d(TAG, "onUpdate: ")
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(context!!)
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
 
         val locationRequest = LocationRequest.create().apply {
             interval = 1000
@@ -51,13 +52,21 @@ class MyWidgetProvider : AppWidgetProvider() {
         val locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 locationResult.lastLocation?.let { location ->
-                    val client = HttpClient(CIO)
                     // 위치 정보를 사용하여 위젯 업데이트
                     Log.d(TAG, "onLocationResult: ${location}")
+                    val locationText = "Lat: ${location.latitude}, Lon: ${location.longitude}"
+                    views.setTextViewText(R.id.tv_position, locationText)
+
+                    // 위젯 업데이트
+                    appWidgetIds?.forEach { appWidgetId ->
+                        appWidgetManager?.updateAppWidget(appWidgetId, views)
+                    }
+
                     CoroutineScope(Dispatchers.IO).launch {
-                        val response: HttpResponse = client.request("https://ktor.io/")
-                        Log.d(TAG, "onLocationResult: ${response.body<String>()}")
-                        client.close()
+                        HttpClient(CIO).use { client->
+                            val response = client.request("https://ktor.io/")
+                            Log.d(TAG, "onLocationResult: ${response.body<String>()}")
+                        }
                     }
                 }
             }
