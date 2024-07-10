@@ -31,6 +31,7 @@ class MyWidgetProvider : AppWidgetProvider() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     override fun onReceive(context: Context?, intent: Intent?) {
+        Log.d(TAG, "onReceive: ")
         super.onReceive(context, intent)
     }
 
