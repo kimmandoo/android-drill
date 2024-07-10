@@ -16,6 +16,14 @@ import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.request.request
+import io.ktor.client.statement.HttpResponse
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 private const val TAG = "MyWidgetProvider"
 class MyWidgetProvider : AppWidgetProvider() {
@@ -40,12 +48,17 @@ class MyWidgetProvider : AppWidgetProvider() {
             fastestInterval = 500
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }
-
         val locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 locationResult.lastLocation?.let { location ->
+                    val client = HttpClient(CIO)
                     // 위치 정보를 사용하여 위젯 업데이트
                     Log.d(TAG, "onLocationResult: ${location}")
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val response: HttpResponse = client.request("https://ktor.io/")
+                        Log.d(TAG, "onLocationResult: ${response.body<String>()}")
+                        client.close()
+                    }
                 }
             }
         }

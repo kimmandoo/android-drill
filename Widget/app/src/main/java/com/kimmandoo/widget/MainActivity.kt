@@ -31,6 +31,7 @@ class MainActivity : AppCompatActivity() {
         requestBackgroundLocationPermission()
     }
 
+    /** FINE, COARSE 권한 요청하는 함수 */
     private fun checkAndRequestLocationPermissions() {
         val fineLocationPermission = ContextCompat.checkSelfPermission(
             this,
