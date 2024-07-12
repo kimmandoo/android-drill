@@ -2,6 +2,7 @@ package com.kimmandoo.tmapwithnavermap
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -18,8 +19,6 @@ import io.ktor.client.request.headers
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
-import io.ktor.http.ContentType
-import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.launch
 
@@ -70,6 +69,8 @@ class MainActivity : AppCompatActivity() {
             }
 
             Log.d(TAG, "ktorPostAPI: ${response.body<TmapRouteResponse>()}")
+            findViewById<TextView>(R.id.tv_test).text =
+                response.body<TmapRouteResponse>().toString()
         }
     }
 }
