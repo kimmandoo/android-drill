@@ -24,6 +24,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "TMAP", getApiKey("TMAP"))
+        manifestPlaceholders["NAVER_MAP_ID_MANIFEST"] = getApiKey("NAVER_MAP_ID_MANIFEST")
     }
 
     buildTypes {

@@ -4,12 +4,16 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.UiThread
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.kimmandoo.tmapwithnavermap.model.TmapRouteRequest
 import com.kimmandoo.tmapwithnavermap.model.TmapRouteResponse
+import com.naver.maps.map.MapFragment
+import com.naver.maps.map.NaverMap
+import com.naver.maps.map.OnMapReadyCallback
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.android.Android
@@ -24,7 +28,7 @@ import kotlinx.coroutines.launch
 
 private const val TAG = "MainActivity"
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -34,8 +38,13 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        requestTmapAPI()
-
+        val fm = supportFragmentManager
+        val mapFragment = fm.findFragmentById(R.id.map) as MapFragment?
+            ?: MapFragment.newInstance().also {
+                fm.beginTransaction().add(R.id.map, it).commit()
+            }
+//        requestTmapAPI()
+        mapFragment.getMapAsync(this)
     }
 
     private fun ktorBasic() {
@@ -69,8 +78,13 @@ class MainActivity : AppCompatActivity() {
             }
 
             Log.d(TAG, "ktorPostAPI: ${response.body<TmapRouteResponse>()}")
-            findViewById<TextView>(R.id.tv_test).text =
-                response.body<TmapRouteResponse>().toString()
+//            findViewById<TextView>(R.id.tv_test).text =
+//                response.body<TmapRouteResponse>().toString()
         }
+    }
+
+    @UiThread
+    override fun onMapReady(p0: NaverMap) {
+        // Tmap에서 받아온 passShape 값으로 navermap에 오버레이를 그린다.
     }
 }
