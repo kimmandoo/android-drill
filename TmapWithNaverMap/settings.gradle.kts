@@ -8,6 +8,7 @@ pluginManagement {
             }
         }
         mavenCentral()
+        maven("https://repository.map.naver.com/archive/maven")
         gradlePluginPortal()
     }
 }
