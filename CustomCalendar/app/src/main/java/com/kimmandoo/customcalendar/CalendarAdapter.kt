@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
+import com.kimmandoo.customcalendar.base.BaseDiffUtil
 import com.kimmandoo.customcalendar.databinding.ItemDayBinding
 import com.kimmandoo.customcalendar.model.CalendarItem
 
@@ -24,16 +25,8 @@ class CalendarAdapter(private val onItemClick: (CalendarItem) -> Unit) :
             }
         }
     }
-
+    class CalendarItemDiffUtil : BaseDiffUtil<CalendarItem>()
     companion object {
-        val diffUtil = object : DiffUtil.ItemCallback<CalendarItem>() {
-            override fun areItemsTheSame(oldItem: CalendarItem, newItem: CalendarItem): Boolean {
-                return oldItem.hashCode() == newItem.hashCode()
-            }
-
-            override fun areContentsTheSame(oldItem: CalendarItem, newItem: CalendarItem): Boolean {
-                return oldItem == newItem
-            }
-        }
+        val diffUtil = CalendarItemDiffUtil()
     }
 }
