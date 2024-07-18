@@ -43,6 +43,8 @@ dependencies {
 //    implementation(libs.text.recognition.japanese)
 //    implementation(libs.text.recognition.korean)
 
+    implementation(libs.entity.extraction)
+
     implementation(libs.play.services.mlkit.text.recognition)
     implementation(libs.play.services.mlkit.text.recognition.chinese)
     implementation(libs.play.services.mlkit.text.recognition.devanagari)
