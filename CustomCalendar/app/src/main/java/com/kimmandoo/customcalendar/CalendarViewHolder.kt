@@ -15,7 +15,7 @@ class CalendarViewHolder(
                 onItemClick(data)
             }
             tvDate.text = data.date.dayOfMonth.toString()
-            if(data.isSunday) tvDate.setTextColor(Color.RED)
+            if(data.isSunday) tvDate.setTextColor(Color.RED) else tvDate.setTextColor(Color.BLACK)
             tvDate.alpha = if (data.isCurrentMonth) 1f else 0.3f // 현재 달이 아니면 흐릿하게 해준다
         }
     }

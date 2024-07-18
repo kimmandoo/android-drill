@@ -25,6 +25,7 @@ class MainActivity : AppCompatActivity() {
         CalendarAdapter(onItemClick = { item ->
             Toast.makeText(this, "${item.date}", Toast.LENGTH_SHORT).show()
             Log.d(TAG, ": $item")
+            showOnlySelectedWeek(item.date)
         })
     }
     private var selectedDate = LocalDate.now()
@@ -36,6 +37,16 @@ class MainActivity : AppCompatActivity() {
             rvCalendar.apply {
                 tvMonthAndYear.text = selectedDate.format(DateTimeFormatter.ofPattern("MMMM yyyy"))
                 adapter = calendarAdapter
+                calendarAdapter.submitList(calculateCalendar(selectedDate))
+            }
+            back.setOnClickListener {
+                selectedDate = selectedDate.minusMonths(1)
+                tvMonthAndYear.text = selectedDate.format(DateTimeFormatter.ofPattern("MMMM yyyy"))
+                calendarAdapter.submitList(calculateCalendar(selectedDate))
+            }
+            front.setOnClickListener {
+                selectedDate = selectedDate.plusMonths(1)
+                tvMonthAndYear.text = selectedDate.format(DateTimeFormatter.ofPattern("MMMM yyyy"))
                 calendarAdapter.submitList(calculateCalendar(selectedDate))
             }
         }
@@ -51,6 +62,24 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun findStartOfWeek(date: LocalDate): LocalDate {
+        var current = date
+        while (current.dayOfWeek != DayOfWeek.SUNDAY) {
+            current = current.minusDays(1)
+        }
+        return current
+    }
+
+    private fun showOnlySelectedWeek(selectedDate: LocalDate) {
+        val startOfWeek = findStartOfWeek(selectedDate)
+        val endOfWeek = startOfWeek.plusDays(6)
+
+        val updatedList = calendarAdapter.currentList.filter { item ->
+            item.date >= startOfWeek && item.date <= endOfWeek
+        }
+        calendarAdapter.submitList(updatedList)
+    }
+
     private fun calculateCalendar(date: LocalDate): List<CalendarItem> {
         val days = mutableListOf<CalendarItem>()
         val yearMonth = YearMonth.from(date)
@@ -61,12 +90,12 @@ class MainActivity : AppCompatActivity() {
         val dayOfWeek = firstOfMonth.dayOfWeek.value
         val previousMonth = yearMonth.minusMonths(1)
         val previousMonthDays = previousMonth.lengthOfMonth()
-        for (i in 1 until dayOfWeek) {
+        for (i in 0 until dayOfWeek) {
             val currentDate = previousMonth.atDay(previousMonthDays - dayOfWeek + i + 1)
             days.add(
                 CalendarItem(
                     date = currentDate,
-                    isSunday = currentDate.dayOfWeek == DayOfWeek.MONDAY,
+                    isSunday = currentDate.dayOfWeek == DayOfWeek.SUNDAY,
                     isCurrentMonth = false
                 )
             )
@@ -78,7 +107,7 @@ class MainActivity : AppCompatActivity() {
             days.add(
                 CalendarItem(
                     date = currentDate,
-                    isSunday = currentDate.dayOfWeek == DayOfWeek.MONDAY,
+                    isSunday = currentDate.dayOfWeek == DayOfWeek.SUNDAY,
                     isCurrentMonth = true
                 )
             )
@@ -91,7 +120,7 @@ class MainActivity : AppCompatActivity() {
             days.add(
                 CalendarItem(
                     date = currentDate,
-                    isSunday = currentDate.dayOfWeek == DayOfWeek.MONDAY,
+                    isSunday = currentDate.dayOfWeek == DayOfWeek.SUNDAY,
                     isCurrentMonth = false
                 )
             )

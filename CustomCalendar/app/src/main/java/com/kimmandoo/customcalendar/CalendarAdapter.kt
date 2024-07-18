@@ -1,6 +1,7 @@
 package com.kimmandoo.customcalendar
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -21,7 +22,7 @@ class CalendarAdapter(private val onItemClick: (CalendarItem) -> Unit) :
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         when (holder) {
             is CalendarViewHolder -> {
-                holder.bind(currentList[position])
+                holder.bind(getItem(position))
             }
         }
     }
