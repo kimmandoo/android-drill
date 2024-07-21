@@ -69,7 +69,7 @@ class MainActivity : AppCompatActivity() {
             )
             val message = Message(content = content, role = "user")
             val visionRequest = Payload(
-                max_tokens = 300,
+                max_tokens = 80,
                 messages = listOf(message),
                 model = model
             )
