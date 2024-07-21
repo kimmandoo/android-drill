@@ -3,6 +3,7 @@ package com.kimmandoo.visionapi
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.util.Base64
 import android.util.Log
@@ -10,6 +11,7 @@ import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -26,7 +28,7 @@ private const val TAG = "MainActivity"
 
 class MainActivity : AppCompatActivity() {
 
-    private val model = "gpt-4o"
+    private val model = "gpt-4o-mini"
 
     private val pickMedia =
         registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -83,26 +85,37 @@ class MainActivity : AppCompatActivity() {
 
     private fun uriToBase64(uri: Uri): String? {
         return try {
-            // URI에서 입력 스트림 열기
-            val inputStream = contentResolver.openInputStream(uri)
-
-            // 비트맵으로 디코딩
-            val bitmap = BitmapFactory.decodeStream(inputStream)
-            inputStream?.close()
-
-            // 비트맵을 JPEG 형식의 바이트 배열로 압축
-            val byteArrayOutputStream = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream)
-            val byteArray = byteArrayOutputStream.toByteArray()
-
+            val utility = ImageProcessingUtility(this)
+            val byteArray = utility.processImageForVisionAPI(uri)
             // Base64로 인코딩
-            val base64String = Base64.encodeToString(byteArray, Base64.DEFAULT)
+            val base64String = Base64.encodeToString(byteArray, Base64.NO_WRAP)
             Log.d(TAG, "uriToBase64: $base64String")
-            // "data:image/jpeg;base64," 접두사 추가
-            "data:image/jpeg;base64,$base64String"
+            return "data:image/webp;base64,$base64String"
         } catch (e: Exception) {
             e.printStackTrace()
             null
         }
+    }
+
+    private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
+        val (height: Int, width: Int) = options.run { outHeight to outWidth }
+        var inSampleSize = 1
+
+        if (height > reqHeight || width > reqWidth) {
+            val halfHeight: Int = height / 2
+            val halfWidth: Int = width / 2
+
+            while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth) {
+                inSampleSize *= 2
+            }
+        }
+
+        return inSampleSize
+    }
+
+    private fun removeExifData(uri: Uri): Bitmap? {
+        val inputStream = contentResolver.openInputStream(uri)
+        val options = BitmapFactory.Options().apply { inJustDecodeBounds = false }
+        return BitmapFactory.decodeStream(inputStream, null, options)
     }
 }
