@@ -35,18 +35,18 @@ class MainActivity : AppCompatActivity() {
         initScreen()
         binding.apply {
             rvCalendar.apply {
-                tvMonthAndYear.text = selectedDate.format(DateTimeFormatter.ofPattern("MMMM yyyy"))
+                tvMonthAndYear.text = selectedDate.format(DateTimeFormatter.ofPattern("yyyy년 MM월 "))
                 adapter = calendarAdapter
                 calendarAdapter.submitList(calculateCalendar(selectedDate))
             }
             back.setOnClickListener {
                 selectedDate = selectedDate.minusMonths(1)
-                tvMonthAndYear.text = selectedDate.format(DateTimeFormatter.ofPattern("MMMM yyyy"))
+                tvMonthAndYear.text = selectedDate.format(DateTimeFormatter.ofPattern("yyyy년 MM월 "))
                 calendarAdapter.submitList(calculateCalendar(selectedDate))
             }
             front.setOnClickListener {
                 selectedDate = selectedDate.plusMonths(1)
-                tvMonthAndYear.text = selectedDate.format(DateTimeFormatter.ofPattern("MMMM yyyy"))
+                tvMonthAndYear.text = selectedDate.format(DateTimeFormatter.ofPattern("yyyy년 MM월 "))
                 calendarAdapter.submitList(calculateCalendar(selectedDate))
             }
         }
