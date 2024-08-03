@@ -1,9 +1,6 @@
 package com.kimmandoo.visionapi
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.util.Base64
 import android.util.Log
@@ -11,7 +8,6 @@ import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -22,7 +18,6 @@ import com.kimmandoo.visionapi.model.Message
 import com.kimmandoo.visionapi.model.Payload
 import com.kimmandoo.visionapi.data.NetworkModule.api
 import kotlinx.coroutines.launch
-import java.io.ByteArrayOutputStream
 
 private const val TAG = "MainActivity"
 
@@ -85,7 +80,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun uriToBase64(uri: Uri): String? {
         return try {
-            val utility = ImageProcessingUtility(this)
+            val utility = ImageProcessingUtil(this)
             val byteArray = utility.processImageForVisionAPI(uri)
             // Base64로 인코딩
             val base64String = Base64.encodeToString(byteArray, Base64.NO_WRAP)

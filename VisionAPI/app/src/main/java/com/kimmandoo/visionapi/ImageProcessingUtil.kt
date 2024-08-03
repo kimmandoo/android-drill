@@ -11,7 +11,7 @@ import androidx.exifinterface.media.ExifInterface
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 
-class ImageProcessingUtility(private val context: Context) {
+class ImageProcessingUtil(private val context: Context) {
 
     fun processImageForVisionAPI(imageUri: Uri, maxWidth: Int = 512, maxHeight: Int = 512, quality: Int = 85): ByteArray {
         val inputStream = context.contentResolver.openInputStream(imageUri)
