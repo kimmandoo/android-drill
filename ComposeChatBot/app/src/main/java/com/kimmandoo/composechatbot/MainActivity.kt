@@ -5,9 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,7 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -28,6 +26,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -57,7 +57,9 @@ class MainActivity : ComponentActivity() {
 fun ChatBot(viewModel: ChatViewModel, modifier: Modifier = Modifier) {
     Box(modifier = modifier.fillMaxSize()) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(bottom = 60.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 60.dp),
         ) {
             LazyColumn(
                 modifier = Modifier
@@ -83,28 +85,33 @@ fun ChatBot(viewModel: ChatViewModel, modifier: Modifier = Modifier) {
             }
         }
 
-        Box(
+        Row(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
+                .fillMaxWidth()
                 .imePadding()
+                .height(60.dp)
+                .padding(horizontal = 8.dp, vertical = 4.dp)
         ) {
-            Row(
+            TextField(
+                value = viewModel.inputText,
+                onValueChange = { viewModel.onInputChange(it) },
+                placeholder = { Text("메시지를 입력하세요") },
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            ClickableText(
+                text = AnnotatedString(text = "전송"),
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(60.dp)
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-            ) {
-                TextField(
-                    value = viewModel.inputText,
-                    onValueChange = { viewModel.onInputChange(it) },
-                    placeholder = { Text("메시지를 입력하세요") },
-                    modifier = Modifier.weight(1f)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Button(onClick = { viewModel.sendMessage() }) {
-                    Text("전송")
-                }
-            }
+                    .background(
+                        color = MyBlue,
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .align(Alignment.CenterVertically)
+                    .padding(12.dp),
+                onClick = { viewModel.sendMessage() },
+                style = TextStyle(color = Color.White)
+            )
         }
     }
 }
