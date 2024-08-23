@@ -5,27 +5,40 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -55,27 +68,34 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun ChatBot(viewModel: ChatViewModel, modifier: Modifier = Modifier) {
-    Box(modifier = modifier.fillMaxSize()) {
+    val lazyListState = rememberLazyListState()
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .windowInsetsPadding(
+                WindowInsets.ime.exclude(WindowInsets.navigationBars)
+            )
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 60.dp),
+                .padding(bottom = 60.dp)
         ) {
+            Text(
+                text = "GPT와의 대화를 시작하세요",
+                Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                textAlign = TextAlign.Center,
+                fontSize = 20.sp,
+                fontWeight = FontWeight(600)
+            )
             LazyColumn(
+                state = lazyListState,
                 modifier = Modifier
                     .fillMaxWidth()
             ) {
-                item {
-                    Text(
-                        text = "GPT와의 대화를 시작하세요",
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        textAlign = TextAlign.Center,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight(600)
-                    )
-                }
                 items(viewModel.messages) { message ->
                     when (message.type) {
                         0 -> UserChat(message = message.message)
@@ -88,9 +108,11 @@ fun ChatBot(viewModel: ChatViewModel, modifier: Modifier = Modifier) {
         Row(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .imePadding()
                 .height(60.dp)
+                .fillMaxWidth()
+                .windowInsetsPadding(
+                    WindowInsets.ime.exclude(WindowInsets.navigationBars)
+                )
                 .padding(horizontal = 8.dp, vertical = 4.dp)
         ) {
             TextField(
@@ -115,6 +137,7 @@ fun ChatBot(viewModel: ChatViewModel, modifier: Modifier = Modifier) {
         }
     }
 }
+
 
 @Composable
 fun UserChat(message: String) {
