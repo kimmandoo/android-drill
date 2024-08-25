@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,9 +35,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
@@ -48,6 +51,7 @@ import androidx.compose.ui.unit.sp
 import com.kimmandoo.composechatbot.ui.theme.ComposeChatBotTheme
 import com.kimmandoo.composechatbot.ui.theme.MyBlue
 import com.kimmandoo.composechatbot.ui.theme.Orange
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,45 +73,46 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun ChatBot(viewModel: ChatViewModel, modifier: Modifier = Modifier) {
     val lazyListState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+    val keyboardHeight = WindowInsets.ime.getBottom(LocalDensity.current)
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
+    LaunchedEffect(key1 = keyboardHeight) {
+        lazyListState.scrollBy(keyboardHeight.toFloat())
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
             .windowInsetsPadding(
                 WindowInsets.ime.exclude(WindowInsets.navigationBars)
             )
+            .padding(bottom = 60.dp)
     ) {
-        Column(
+        Text(
+            text = "GPT와의 대화를 시작하세요",
+            Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            textAlign = TextAlign.Center,
+            fontSize = 20.sp,
+            fontWeight = FontWeight(600)
+        )
+        LazyColumn(
+            state = lazyListState,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 60.dp)
+                .weight(1f)
         ) {
-            Text(
-                text = "GPT와의 대화를 시작하세요",
-                Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                textAlign = TextAlign.Center,
-                fontSize = 20.sp,
-                fontWeight = FontWeight(600)
-            )
-            LazyColumn(
-                state = lazyListState,
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                items(viewModel.messages) { message ->
-                    when (message.type) {
-                        0 -> UserChat(message = message.message)
-                        1 -> GptChat(message = message.message)
-                    }
+            items(viewModel.messages) { message ->
+                when (message.type) {
+                    0 -> UserChat(message = message.message)
+                    1 -> GptChat(message = message.message)
                 }
             }
         }
 
         Row(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
                 .height(60.dp)
                 .fillMaxWidth()
                 .windowInsetsPadding(
@@ -119,7 +124,15 @@ fun ChatBot(viewModel: ChatViewModel, modifier: Modifier = Modifier) {
                 value = viewModel.inputText,
                 onValueChange = { viewModel.onInputChange(it) },
                 placeholder = { Text("메시지를 입력하세요") },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
+                    .onFocusChanged {
+                        coroutineScope.launch {
+                            if (viewModel.messages.isNotEmpty()) {
+                                lazyListState.scrollToItem(viewModel.messages.size - 1)
+                            }
+                        }
+                    }
             )
             Spacer(modifier = Modifier.width(8.dp))
             ClickableText(
