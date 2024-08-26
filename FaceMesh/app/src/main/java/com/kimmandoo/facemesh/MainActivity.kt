@@ -23,6 +23,7 @@ import com.google.mlkit.vision.facemesh.FaceMesh
 import com.google.mlkit.vision.facemesh.FaceMeshDetection
 import com.google.mlkit.vision.facemesh.FaceMeshDetector
 import com.google.mlkit.vision.facemesh.FaceMeshDetectorOptions
+import com.google.mlkit.vision.facemesh.FaceMeshPoint
 
 
 private const val TAG = "MainActivity"
@@ -85,18 +86,20 @@ class MainActivity : AppCompatActivity() {
                     InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
                 meshDetector.process(image)
                     .addOnSuccessListener { faceMeshes ->
-                        // 감지된 얼굴 메시 처리
                         for (faceMesh in faceMeshes) {
                             val leftEye = faceMesh.getPoints(FaceMesh.LEFT_EYE)
                             val rightEye = faceMesh.getPoints(FaceMesh.RIGHT_EYE)
                             Log.d(TAG, "face: $leftEye || $rightEye")
 
-//                            if (leftEye != null && rightEye != null) {
-//                                val bothEyesOpen = leftEye.size > 0.5 && rightEye > 0.5
-//                                Log.d(TAG, "Left eye open probability: $leftEye")
-//                                Log.d(TAG, "Right eye open probability: $rightEye")
-//                                Log.d(TAG, "Both eyes open: $bothEyesOpen")
-//                            }
+                            val leftEyeOpen = isEyeOpen(leftEye)
+                            val rightEyeOpen = isEyeOpen(rightEye)
+
+                            Log.d(TAG, "Left eye open: $leftEyeOpen, Right eye open: $rightEyeOpen")
+
+                            // 양쪽 눈의 상태에 따라 전체적인 눈 감김 여부 판단
+                            val bothEyesOpen = leftEyeOpen && rightEyeOpen
+                            Log.d(TAG, "Both eyes open: $bothEyesOpen")
+
                         }
                     }
                     .addOnFailureListener { e ->
@@ -119,6 +122,30 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
             Log.d(TAG, "error: $e")
         }
+    }
+
+    private fun isEyeOpen(eyePoints: List<FaceMeshPoint>): Boolean {
+        // 눈의 세로 양 끝
+        val topPoint = eyePoints.minByOrNull { it.position.y }
+        val bottomPoint = eyePoints.maxByOrNull { it.position.y }
+
+        // 눈의 가로 양 끝
+        val leftPoint = eyePoints.minByOrNull { it.position.x }
+        val rightPoint = eyePoints.maxByOrNull { it.position.x }
+
+        if (topPoint != null && bottomPoint != null && leftPoint != null && rightPoint != null) {
+            val eyeHeight = bottomPoint.position.y - topPoint.position.y
+            val eyeWidth = rightPoint.position.x - leftPoint.position.x
+            val aspectRatio = eyeHeight / eyeWidth
+
+            // 종횡비가 임계값보다 크면 눈이 떠져있음.
+            val isOpen = aspectRatio > EYE_ASPECT_RATIO_THRESHOLD
+
+            Log.d(TAG, "Eye aspect ratio: $aspectRatio, isOpen: $isOpen")
+            return isOpen
+        }
+
+        return false
     }
 
     private fun checkPermission() = REQUIRED_PERMISSIONS.all {
@@ -154,6 +181,7 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val REQUEST_CODE_PERMISSIONS = 10
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
+        private const val EYE_ASPECT_RATIO_THRESHOLD = 0.2f
     }
 }
 
