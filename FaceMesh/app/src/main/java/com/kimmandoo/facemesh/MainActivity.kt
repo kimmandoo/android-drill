@@ -18,12 +18,15 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.facemesh.FaceMesh
 import com.google.mlkit.vision.facemesh.FaceMeshDetection
 import com.google.mlkit.vision.facemesh.FaceMeshDetector
 import com.google.mlkit.vision.facemesh.FaceMeshDetectorOptions
 import com.google.mlkit.vision.facemesh.FaceMeshPoint
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 private const val TAG = "MainActivity"
@@ -86,20 +89,23 @@ class MainActivity : AppCompatActivity() {
                     InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
                 meshDetector.process(image)
                     .addOnSuccessListener { faceMeshes ->
-                        for (faceMesh in faceMeshes) {
-                            val leftEye = faceMesh.getPoints(FaceMesh.LEFT_EYE)
-                            val rightEye = faceMesh.getPoints(FaceMesh.RIGHT_EYE)
-                            Log.d(TAG, "face: $leftEye || $rightEye")
+                        lifecycleScope.launch {
+                            delay(200)
+                            for (faceMesh in faceMeshes) {
+                                val leftEye = faceMesh.getPoints(FaceMesh.LEFT_EYE)
+                                val rightEye = faceMesh.getPoints(FaceMesh.RIGHT_EYE)
+                                Log.d(TAG, "face: $leftEye || $rightEye")
 
-                            val leftEyeOpen = isEyeOpen(leftEye)
-                            val rightEyeOpen = isEyeOpen(rightEye)
+                                val leftEyeOpen = isEyeOpen(leftEye)
+                                val rightEyeOpen = isEyeOpen(rightEye)
 
-                            Log.d(TAG, "Left eye open: $leftEyeOpen, Right eye open: $rightEyeOpen")
+                                Log.d(TAG, "Left eye open: $leftEyeOpen, Right eye open: $rightEyeOpen")
 
-                            // 양쪽 눈의 상태에 따라 전체적인 눈 감김 여부 판단
-                            val bothEyesOpen = leftEyeOpen && rightEyeOpen
-                            Log.d(TAG, "Both eyes open: $bothEyesOpen")
+                                // 양쪽 눈의 상태에 따라 전체적인 눈 감김 여부 판단
+                                val bothEyesOpen = leftEyeOpen && rightEyeOpen
+                                Log.d(TAG, "Both eyes open: $bothEyesOpen")
 
+                            }
                         }
                     }
                     .addOnFailureListener { e ->
