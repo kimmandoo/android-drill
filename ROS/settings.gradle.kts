@@ -7,17 +7,18 @@ pluginManagement {
                 includeGroupByRegex("androidx.*")
             }
         }
-        maven(url = "https://github.com/rosjava/rosjava_mvn_repo/raw/master")
+        maven { url = uri("https://github.com/rosjava/rosjava_mvn_repo/raw/master") }
         mavenCentral()
         gradlePluginPortal()
     }
 }
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        maven(url = "https://github.com/rosjava/rosjava_mvn_repo/raw/master")
         google()
         mavenCentral()
+        maven { url = uri("https://github.com/rosjava/rosjava_mvn_repo/raw/master") }
     }
 }
 

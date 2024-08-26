@@ -44,4 +44,11 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    
+    implementation(libs.rosjava)
+    implementation(libs.android10)
+    implementation(libs.message.generation)
+    implementation(libs.std.msgs)
+    implementation(libs.sensor.msgs)
+
 }

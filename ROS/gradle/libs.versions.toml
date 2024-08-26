@@ -9,6 +9,10 @@ appcompat = "1.7.0"
 material = "1.12.0"
 activity = "1.9.1"
 constraintlayout = "2.1.4"
+rosjava = "0.3.6"
+rosAndroid = "0.3.3"
+sensor_msgs = "1.12.7"
+std_msgs = "0.5.11"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -19,6 +23,11 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+message_generation = { module = "org.ros.rosjava_bootstrap:message_generation", version.ref = "rosjava" }
+rosjava = { module = "com.github.rosjava:rosjava", version.ref = "rosjava" }
+android10 = { module = "org.ros.android_core:android_10", version.ref = "rosAndroid" }
+sensor_msgs = { module = "org.ros.rosjava_messages:sensor_msgs", version.ref = "sensor_msgs" }
+std_msgs = { module = "org.ros.rosjava_messages:std_msgs", version.ref = "std_msgs" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
