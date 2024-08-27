@@ -1,6 +1,7 @@
 package com.kimmandoo.websocket
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
@@ -9,10 +10,16 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
+
+private const val TAG = "MainActivity"
+
 class MainActivity : AppCompatActivity() {
 
     private lateinit var webSocketClient: WebSocketClient
     private lateinit var webSocketImageClient: WebSocketImageClient
+    private lateinit var rosClient: ROSWebSocketClient
+    private lateinit var rosSocketClient: ROSSocketClient
+
     private lateinit var messageEditText: EditText
     private lateinit var sendButton: Button
     private lateinit var receivedMessagesTextView: TextView
@@ -30,19 +37,62 @@ class MainActivity : AppCompatActivity() {
         messageEditText = findViewById(R.id.messageEditText)
         sendButton = findViewById(R.id.sendButton)
         receivedMessagesTextView = findViewById(R.id.receivedMessagesTextView)
-        webSocket()
+//        webSocket()
+//        rosSocket()
+        rosClient = ROSWebSocketClient("ws://$CONNTECT_IP:9090")
 
+
+        rosClient.onConnectionOpened = {
+            runOnUiThread {
+                receivedMessagesTextView.append("ROS에 연결됨\n")
+                rosClient.subscribe("/test_topic")
+            }
+        }
+
+        rosClient.onMessageReceived = { topic, message ->
+            runOnUiThread {
+                receivedMessagesTextView.append("토픽: $topic, 메시지: $message\n")
+            }
+        }
+
+        rosClient.onConnectionClosed = { code, reason ->
+            runOnUiThread {
+                receivedMessagesTextView.append("연결 종료: $code, $reason\n")
+            }
+        }
+
+        rosClient.onConnectionFailed = { error ->
+            Log.d(TAG, "연결 실패: ${error.message}\n")
+            runOnUiThread {
+                receivedMessagesTextView.append("연결 실패: ${error.message}\n")
+            }
+        }
+
+        rosClient.connect()
 
         sendButton.setOnClickListener {
             val message = messageEditText.text.toString()
             if (message.isNotEmpty()) {
-                webSocketClient.sendMessage(message)
+                rosClient.publish("/test_topic", """{"data": "$message"}""")
                 messageEditText.text.clear()
             }
         }
     }
 
-    private fun webSocket(){
+//    private fun rosSocket() {
+//        val ip = "192.168.56.102"
+//        rosSocketClient = ROSSocketClient(ip, 9090)  // ROS Master URI의 IP와 포트
+//
+//        lifecycleScope.launch {
+//            rosSocketClient.connect()
+//
+//            rosSocketClient.sendMessage("Hello ROS!")
+//            val response = rosSocketClient.receiveMessage()
+//            println("Received from ROS: $response")
+//        }
+//    }
+
+    private fun webSocket() {
         webSocketClient = WebSocketClient("ws://echo.websocket.org")
 
         webSocketClient.onMessageReceived = { message ->
@@ -64,7 +114,7 @@ class MainActivity : AppCompatActivity() {
         webSocketClient.connect()
     }
 
-    private fun webImageSocket(){
+    private fun webImageSocket() {
         webSocketImageClient = WebSocketImageClient("ws://your-websocket-server-url")
 
         webSocketImageClient.onImageReceived = { bitmap ->
@@ -89,5 +139,10 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         webSocketClient.disconnect()
+        rosClient.disconnect()
+    }
+
+    companion object {
+        const val CONNTECT_IP = "192.168.137.1"
     }
 }
