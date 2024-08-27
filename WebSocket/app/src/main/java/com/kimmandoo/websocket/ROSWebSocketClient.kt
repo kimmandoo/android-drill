@@ -1,9 +1,11 @@
 package com.kimmandoo.websocket
 
+import android.util.Log
 import okhttp3.*
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
+private const val TAG = "ROSWebSocketClient"
 class ROSWebSocketClient(private val url: String) {
     private var webSocket: WebSocket? = null
     private val client = OkHttpClient.Builder()
@@ -33,7 +35,7 @@ class ROSWebSocketClient(private val url: String) {
         }
 
         override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
-            webSocket.close(1000, null)
+            webSocket.close(CODE_EXIT, null)
         }
 
         override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
@@ -63,6 +65,10 @@ class ROSWebSocketClient(private val url: String) {
     }
 
     fun disconnect() {
-        webSocket?.close(1000, "Disconnecting")
+        webSocket?.close(CODE_EXIT, "Disconnecting")
+    }
+
+    companion object{
+        const val CODE_EXIT = 1000
     }
 }
