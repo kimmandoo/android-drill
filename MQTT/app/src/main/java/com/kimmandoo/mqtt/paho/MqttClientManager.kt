@@ -1,4 +1,4 @@
-package com.kimmandoo.mqtt
+package com.kimmandoo.mqtt.paho
 
 import org.eclipse.paho.client.mqttv3.*
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence

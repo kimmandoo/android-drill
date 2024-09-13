@@ -30,6 +30,11 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+    packaging {
+        resources {
+            excludes += setOf("META-INF/INDEX.LIST", "META-INF/io.netty.versions.properties")
+        }
+    }
     kotlinOptions {
         jvmTarget = "1.8"
     }
@@ -50,5 +55,11 @@ dependencies {
     implementation(libs.org.eclipse.paho.client.mqttv3)
     implementation(libs.org.eclipse.paho.android.service)
     implementation(libs.androidx.localbroadcastmanager)
+
+
+
+
+    
+    implementation(libs.hivemq.mqtt.client)
 
 }

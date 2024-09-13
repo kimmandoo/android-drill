@@ -1,4 +1,4 @@
-package com.kimmandoo.mqtt
+package com.kimmandoo.mqtt.paho
 
 import android.os.Bundle
 import android.util.Log
@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.kimmandoo.mqtt.R
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken
 import org.eclipse.paho.client.mqttv3.MqttCallback
 import org.eclipse.paho.client.mqttv3.MqttMessage
@@ -46,11 +47,11 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        mqttClient.subscribe("your/topic")
+        mqttClient.subscribe("pub/topic")
 
         // 메시지 발행 예
         findViewById<TextView>(R.id.button).setOnClickListener {
-            mqttClient.publish("your/topic", "Hello, MQTT!")
+            mqttClient.publish("sub/topic", "Hello, MQTT!")
         }
     }
 
@@ -60,6 +61,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
-        private const val MQTT_SERVER = ""
+        const val MQTT_SERVER = "tcp://192.168.100.199:1883"
     }
 }
