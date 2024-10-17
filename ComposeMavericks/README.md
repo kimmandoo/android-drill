@@ -1,4 +1,4 @@
-이 코드가 왜 MVI(Model-View-Intent) 패턴에 맞는지 천천히 단계별로 설명해줄게.
+# MVI 입문하기
 
 1. MVI 패턴의 구성 요소
 
@@ -119,3 +119,96 @@ class MyViewModel(initialState: MyState) : MavericksViewModel<MyState>(initialSt
    •	Intent: LaunchedEffect 내에서 데이터를 로드하거나, 사용자의 상호작용에 따라 loadData()와 같은 Intent를 전달해 상태를 변경함.
 
 이처럼 MVI 패턴에서는 상태 변화가 View에 반영되고, Intent에 따라 상태가 업데이트되는 방식으로 UI와 로직을 분리하면서도 일관성 있게 동작하게 만들어 줘.
+
+# 그럼 왜 Mavericks인가??
+
+Mavericks를 사용함으로써 Jetpack Compose에서 MVI 패턴을 적용할 때 편해진 부분을 몇 가지 설명해줄게.
+
+1. 상태 관리의 단순화
+
+Mavericks는 상태 관리와 관련된 복잡한 작업을 간소화해. 일반적으로 상태를 관리할 때는 직접적으로 StateFlow나 LiveData 같은 도구를 사용하여 상태를 업데이트하고 UI를 다시 렌더링하는 로직을 작성해야 하지만, Mavericks는 이 과정을 상당히 단순화해줘.
+
+Mavericks 사용 전:
+
+	•	MutableStateFlow를 직접 관리해야 하고, 상태가 변경될 때마다 상태 흐름을 구독하는 로직을 만들어야 해.
+	•	상태 복사와 변경을 수동으로 처리해야 하며, 이를 위해 상태가 변경될 때마다 UI를 수동으로 갱신해야 함.
+
+Mavericks 사용 후:
+
+	•	**setState { copy(...) }**를 사용해 간단하게 상태를 복사하고 업데이트할 수 있어.
+	•	Mavericks는 자동으로 상태 변화를 구독하고 관리해 주기 때문에, UI에서 상태 변화를 신경 쓰지 않아도 됨.
+
+```kotlin
+setState { copy(isLoading = true) }  // 간단하게 상태를 변경하고 Mavericks가 자동으로 처리
+```
+
+2. 자동 상태 구독 및 ViewModel 생명 주기 관리
+
+Mavericks는 MavericksViewModel을 통해 상태를 관리하고, collectAsState()로 View에서 간단하게 상태를 구독할 수 있어. 이를 통해 수동으로 상태를 구독하고 생명주기를 관리할 필요가 없어졌어.
+
+Mavericks 사용 전:
+
+	•	상태 흐름을 수동으로 구독하거나, ViewModel과 생명 주기를 관리해야 함.
+	•	StateFlow나 LiveData를 직접 사용하면서, 상태 관리와 구독을 수동으로 처리해야 함.
+
+Mavericks 사용 후:
+
+	•	collectAsState()를 통해 상태를 간편하게 구독하고, Mavericks가 상태의 생명 주기를 관리해 줘서 이를 신경 쓸 필요가 없어.
+
+```kotlin
+val state by viewModel.collectAsState()  // 상태 변화를 자동으로 구독하고 UI 업데이트
+```
+
+3. 명확한 상태 모델링
+
+Mavericks는 상태를 명확하게 모델링할 수 있도록 도와줘. 모든 상태는 MavericksState 인터페이스를 구현하여 불변 객체로 관리되며, copy()를 통해 상태를 변경할 때마다 새로운 상태를 반환하도록 권장해. 이렇게 하면 상태를 추적하고 디버깅하는 것이 더 쉬워져.
+
+Mavericks 사용 전:
+
+	•	상태를 직접 관리할 때 실수로 상태가 변경되는 등의 사이드 이펙트를 방지하기가 어려움.
+	•	상태가 명확하게 정의되지 않으면 상태 변경이 복잡해질 수 있음.
+
+Mavericks 사용 후:
+
+	•	MavericksState를 통해 모든 상태가 명확하게 정의되고, 불변 객체로 관리됨. 상태를 변경할 때마다 새로운 객체를 생성하는 방식으로 유지됨.
+
+```kotlin
+data class MyState(
+   val isLoading: Boolean = false, 
+   val data: List<String> = emptyList()
+) : MavericksState
+
+```
+
+4. 의존성 주입(Hilt와의 통합)
+
+Mavericks는 Hilt와 통합이 잘 되어 있어서 ViewModel에 대한 의존성 주입을 쉽게 처리할 수 있어. Mavericks는 Hilt를 사용해 의존성 주입을 자동으로 처리해 주므로, ViewModel을 생성할 때의 복잡한 설정을 줄일 수 있어.
+
+Mavericks 사용 전:
+
+	•	ViewModel에 의존성을 주입하려면 복잡한 설정이 필요했을 수 있음.
+
+Mavericks 사용 후:
+
+	•	Hilt와의 통합 덕분에 ViewModel 생성 및 의존성 주입이 매우 간단해짐.
+```kotlin
+@HiltViewModel
+   class MyViewModel @Inject constructor(
+   initialState: MyState
+) : MavericksViewModel<MyState>(initialState)
+```
+
+5. 상태 변환 및 액션의 구조화
+
+Mavericks는 상태를 간편하게 변환하고 액션을 구조화할 수 있게 도와줘. MavericksViewModel 내에서 상태 변경이 일어날 때마다 상태를 불변으로 유지하면서 관리할 수 있어, 이로 인해 로직이 명확해지고 실수를 줄일 수 있어.
+
+요약
+
+Mavericks를 사용하면 상태 관리가 단순해지고, 다음과 같은 장점들이 생겨:
+
+	•	상태의 자동 구독 및 생명 주기 관리.
+	•	상태 복사를 통한 불변성 유지로 디버깅이 쉬워짐.
+	•	setState를 사용해 상태를 간단하게 업데이트할 수 있음.
+	•	Hilt와의 통합으로 의존성 주입이 간단해짐.
+
+따라서, Mavericks는 MVI 패턴을 Jetpack Compose에서 훨씬 더 편리하게 구현하고 유지 보수할 수 있도록 도와주는 라이브러리야.
