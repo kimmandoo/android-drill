@@ -16,11 +16,13 @@ MVI는 Model, View, Intent로 구성된 패턴이야. 각각의 역할을 통해
 
 Model은 애플리케이션의 상태를 정의하고 유지하는 객체야. 이 코드에서는 MyState가 Model의 역할을 수행해. 상태는 애플리케이션이 현재 어떤 상태에 있는지 설명하는 데이터 집합을 포함하고 있어.
 
-data class MyState(
-val isLoading: Boolean = false,
-val data: List<String> = emptyList(),
-val errorMessage: String? = null
-) : MavericksState
+```kotlin
+   data class MyState(
+      val isLoading: Boolean = false,
+      val data: List<String> = emptyList(),
+      val errorMessage: String? = null
+   ) : MavericksState
+```
 
 	•	isLoading: 데이터를 로드 중인 상태를 나타냄.
 	•	data: 로드된 데이터를 저장하는 리스트.
@@ -32,6 +34,7 @@ Model은 불변 객체이며, 변경할 때마다 새로운 상태를 복사해 
 
 View는 사용자가 실제로 보는 UI를 정의하는 부분이야. Jetpack Compose에서는 컴포저블이 그 역할을 하지.
 
+```kotlin
 @Composable
 fun MyScreen(viewModel: MyViewModel = mavericksViewModel()) {
 // 상태를 구독
@@ -54,6 +57,7 @@ val state by viewModel.collectAsState()
         }
     }
 }
+```
 
 	•	MyScreen은 상태에 따라 UI를 다르게 표시해. 로딩 중일 때는 로딩 스피너를 보여주고, 에러가 발생하면 에러 메시지를 표시하며, 데이터를 성공적으로 로드하면 리스트를 그려.
 	•	collectAsState()를 사용하여 ViewModel에서 관리하는 상태를 구독해. 상태가 변경될 때마다 UI가 자동으로 다시 렌더링되므로, 상태 기반의 UI를 쉽게 구현할 수 있어.
@@ -61,11 +65,12 @@ val state by viewModel.collectAsState()
 3) Intent (사용자 이벤트)
 
 Intent는 사용자 상호작용이나 이벤트를 ViewModel에 전달하여 상태를 변경하는 역할을 해. 이 코드에서 loadData()가 일종의 Intent 역할을 수행해.
-
+```kotlin 
 LaunchedEffect(Unit) {
 viewModel.loadData()
 }
 
+```
 	•	LaunchedEffect 내에서 viewModel.loadData()를 호출하여 데이터를 로드하도록 요청해. loadData()는 사용자가 페이지를 열거나 특정 시점에 호출될 수 있는 Intent와 같아. 이 함수는 상태를 변경시켜 UI에 반영되도록 함.
 	•	Intent는 상태를 변경하는 이벤트이고, 여기서는 데이터를 로드하는 Intent를 처리하고 있어.
 
@@ -73,6 +78,7 @@ viewModel.loadData()
 
 ViewModel은 사용자 이벤트(Intent)를 처리하고, 상태(Model)를 관리하며 View에 전달하는 역할을 해. MavericksViewModel을 사용해 상태를 관리하고, setState()로 상태를 변경하는 방식이 MVI의 핵심이야.
 
+```kotlin
 class MyViewModel(initialState: MyState) : MavericksViewModel<MyState>(initialState) {
 
     // 데이터를 로드하는 메서드
@@ -94,6 +100,7 @@ class MyViewModel(initialState: MyState) : MavericksViewModel<MyState>(initialSt
         }
     }
 }
+```
 
 	•	loadData()는 상태를 변경하는 Intent 역할을 하며, 상태가 업데이트되면 View는 이를 감지하고 UI를 다시 렌더링해.
 	•	setState { copy(...) }는 현재 상태를 복사하여 새로운 상태를 생성하고, 이를 Mavericks가 관리하여 자동으로 상태 변화를 UI에 반영하게 해.
