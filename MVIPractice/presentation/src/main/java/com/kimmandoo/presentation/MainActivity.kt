@@ -1,4 +1,4 @@
-package com.kimmandoo.mvipractice
+package com.kimmandoo.presentation
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -11,7 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.kimmandoo.mvipractice.ui.theme.MVIPracticeTheme
+import com.kimmandoo.presentation.theme.MVIPracticeTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

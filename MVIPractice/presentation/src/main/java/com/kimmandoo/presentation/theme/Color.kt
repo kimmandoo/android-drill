@@ -1,4 +1,4 @@
-package com.kimmandoo.mvipractice.ui.theme
+package com.kimmandoo.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 
