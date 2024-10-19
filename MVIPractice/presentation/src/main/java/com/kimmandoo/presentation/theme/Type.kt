@@ -8,7 +8,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.kimmandoo.presentation.R
 
-
+// font는 Type에 있다(굳이 Type이 아니어도 되긴함)
 val pretendardFontFamily: FontFamily = FontFamily(Font(R.font.ptd_regular))
 
 val defaultTypography = Typography()

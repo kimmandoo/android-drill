@@ -1,4 +1,4 @@
-package com.kimmandoo.presentation
+package com.kimmandoo.presentation.login
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -12,11 +12,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.kimmandoo.presentation.theme.MVIPracticeTheme
+import dagger.hilt.android.AndroidEntryPoint
 
-class MainActivity : ComponentActivity() {
+@AndroidEntryPoint
+class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+//        enableEdgeToEdge()
         setContent {
             MVIPracticeTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
@@ -36,12 +38,4 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
         text = "Hello $name!",
         modifier = modifier
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    MVIPracticeTheme {
-        Greeting("Android")
-    }
 }

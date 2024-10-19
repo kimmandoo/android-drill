@@ -1,10 +1,7 @@
 package com.kimmandoo.mvipractice
 
 import android.app.Application
+import dagger.hilt.android.HiltAndroidApp
 
-class MyApplication : Application(){
-    override fun onCreate() {
-        super.onCreate()
-
-    }
-}
+@HiltAndroidApp
+class MyApplication : Application()
