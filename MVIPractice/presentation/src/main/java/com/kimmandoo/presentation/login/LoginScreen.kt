@@ -1,6 +1,7 @@
 package com.kimmandoo.presentation.login
 
 import android.widget.Space
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -18,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -26,6 +28,7 @@ import com.kimmandoo.presentation.component.MGButton
 import com.kimmandoo.presentation.component.MGTextField
 import com.kimmandoo.presentation.theme.MVIPracticeTheme
 import org.orbitmvi.orbit.compose.collectAsState
+import org.orbitmvi.orbit.compose.collectSideEffect
 
 
 @Composable
@@ -37,6 +40,14 @@ fun LoginScreenWithViewModel(
     onNavigateToSignUpScreen: () -> Unit
 ) {    // 상태를 가져와야됨
     val state = viewModel.collectAsState().value // orbit.compose에 달려있는 것
+    val context = LocalContext.current
+    viewModel.collectSideEffect { sideEffect ->// sideeffect 수행하는 곳
+        when(sideEffect){
+            is LoginSideEffect.ShowToast -> { // SealedClass로 수행한 이유
+                Toast.makeText(context, sideEffect.message, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     // 얘는 ViewModel을 들고있을 거라서 preview에 따로 나오지 않음
     LoginScreen(
