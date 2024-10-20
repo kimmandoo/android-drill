@@ -18,20 +18,46 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.kimmandoo.presentation.component.MGButton
 import com.kimmandoo.presentation.component.MGTextField
 import com.kimmandoo.presentation.theme.MVIPracticeTheme
+import org.orbitmvi.orbit.compose.collectAsState
+
 
 @Composable
-fun LoginScreen(
+fun LoginScreenWithViewModel(
+    // 이렇게 해버리면 NavHost에서 관리되는 생명주기가 달라서 viewModel이 소멸되지않는 현상이 발생함
+    // composable이 있는지 확인해서 viewModel 생명주기를 조절해주는 방식을 사용해야됨 -> 쉽지않다 .
+    // 이걸 hilt-compose가 대신해줌
+    viewModel: LoginViewModel = hiltViewModel(), // navHost에서 composable 상태에따라 적절히 생명주기 조절가능
+    onNavigateToSignUpScreen: () -> Unit
+) {    // 상태를 가져와야됨
+    val state = viewModel.collectAsState().value // orbit.compose에 달려있는 것
+
+    // 얘는 ViewModel을 들고있을 거라서 preview에 따로 나오지 않음
+    LoginScreen(
+        id = state.id,
+        password = state.password,
+        onIdChanged = viewModel::onIdChanged,
+        onPasswordChanged = viewModel::onPasswordChanged,
+        onLoginButtonClicked = viewModel::onLoginClick,
+        onNavigateToSignUpScreen = onNavigateToSignUpScreen
+    )
+
+}
+
+@Composable
+private fun LoginScreen(
     id: String,
     password: String,
     onIdChanged: (String) -> Unit, // TextField를 쓸것이기 때문에
     onPasswordChanged: (String) -> Unit,
     onLoginButtonClicked: () -> Unit,
-    onNavigateToSignUpScreen: () -> Unit
+    onNavigateToSignUpScreen: () -> Unit,
 ) {
     Surface {
         // Surface로 배경 깔기
@@ -95,7 +121,8 @@ fun LoginScreen(
                         .padding(8.dp)
                         .fillMaxWidth(),
                     value = password,
-                    onValueChange = onPasswordChanged
+                    onValueChange = onPasswordChanged,
+                    visualTranformation = PasswordVisualTransformation()
                 )
                 MGButton(
                     modifier = Modifier

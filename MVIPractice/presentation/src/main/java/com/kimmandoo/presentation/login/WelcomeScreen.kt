@@ -20,7 +20,9 @@ import androidx.compose.ui.unit.dp
 import com.kimmandoo.presentation.theme.MVIPracticeTheme
 
 @Composable
-fun WelcomeScreen() {
+fun WelcomeScreen(
+    onNavigateToLoginScreen: () -> Unit,
+) {
     Surface {
         // Screen 단위는 Composable로
         Box(
@@ -53,7 +55,7 @@ fun WelcomeScreen() {
                     contentColor = MaterialTheme.colorScheme.onPrimary
                 ),
                 onClick = {
-
+                    onNavigateToLoginScreen()
                 }
             ) {
                 Text(
@@ -70,6 +72,6 @@ fun WelcomeScreen() {
 @Composable
 private fun DefaultPreview() {
     MVIPracticeTheme {
-        WelcomeScreen()
+        WelcomeScreen({})
     }
 }
