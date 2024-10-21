@@ -1,5 +1,6 @@
 package com.kimmandoo.presentation.main.setting
 
+import android.util.Log
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import com.kimmandoo.domain.usecase.login.ClearTokenUseCase
@@ -14,16 +15,12 @@ import org.orbitmvi.orbit.syntax.simple.reduce
 import org.orbitmvi.orbit.viewmodel.container
 import javax.inject.Inject
 
+private const val TAG = "SettingViewModel"
 @HiltViewModel
 class SettingViewModel @Inject constructor(
     private val clearTokenUseCase: ClearTokenUseCase,
     private val getMyUserUseCase: GetMyUserUseCase,
 ) : ViewModel(), ContainerHost<SettingState, SettingSideEffect> {
-
-    init {
-        load() // 뷰모델이 인스턴스에 올라가자마자 호출될 것
-    }
-
     override val container: Container<SettingState, SettingSideEffect> = container(
         initialState = SettingState(),
         buildSettings = {
@@ -35,8 +32,13 @@ class SettingViewModel @Inject constructor(
         }
     )
 
+    init { // init 블록의 위치가 놀랍게도 container 초기화 시점에 영향을 끼친다... 미쳤다 ㅎㅎ
+        load() // 뷰모델이 인스턴스에 올라가자마자 호출될 것
+    }
+
     private fun load() = intent {
         val user = getMyUserUseCase().getOrThrow()
+        Log.d(TAG, "load: $user")
         reduce {
             state.copy(
                 profileImageUrl = user.profileImageUrl,

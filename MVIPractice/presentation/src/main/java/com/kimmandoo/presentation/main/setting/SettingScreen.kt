@@ -130,7 +130,8 @@ fun SettingScreenPreview() {
                 "profileImageUrl",
                 onImageChangeClick = {},
                 onNameChangeClick = {},
-                onLogoutClick = {})
+                onLogoutClick = {}
+            )
         }
     }
 }
