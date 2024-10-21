@@ -4,10 +4,10 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.kimmandoo.domain.usecase.login.GetTokenUseCase
 import com.kimmandoo.presentation.login.LoginActivity
+import com.kimmandoo.presentation.main.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
