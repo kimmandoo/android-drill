@@ -33,7 +33,8 @@ private const val TAG = "KtorModule"
 @Module
 @InstallIn(SingletonComponent::class)
 object KtorModule {
-    val BASE_URL = "192.168.0.21:8080/api" // localhost
+    val BASE_URL = "10.0.2.2:8080/api" // localhost
+//    val BASE_URL = "192.168.0.21:8080/api" // 집
     private const val NETWORK_TIME_OUT = 6_000L
 
     @Provides
