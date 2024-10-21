@@ -1,5 +1,6 @@
 package com.kimmandoo.presentation.login
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -13,14 +14,51 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.kimmandoo.presentation.component.MGButton
 import com.kimmandoo.presentation.component.MGTextField
 import com.kimmandoo.presentation.theme.MVIPracticeTheme
+import org.orbitmvi.orbit.compose.collectAsState
+import org.orbitmvi.orbit.compose.collectSideEffect
 
 @Composable
 fun SignUpScreen(
+    viewModel: SignUpViewModel = hiltViewModel(),
+    onNavigateToLoginScreen: () -> Unit,
+) {
+    val state = viewModel.collectAsState().value
+    val context = LocalContext.current
+    viewModel.collectSideEffect { sideEffect ->
+        when (sideEffect) {
+            is SignUpSideEffect.ShowToast -> {
+                Toast.makeText(context, sideEffect.message, Toast.LENGTH_SHORT).show()
+            }
+
+            is SignUpSideEffect.NavigateToLoginScreen -> {
+                onNavigateToLoginScreen()
+            }
+        }
+    }
+
+    SignUpScreen(
+        id = state.id,
+        username = state.username,
+        password = state.password,
+        passwordCheck = state.passwordCheck,
+        onIdChanged = viewModel::onIdChanged,
+        onUsernameChanged = viewModel::onUsernameChanged,
+        onPasswordChanged = viewModel::onPasswordChanged,
+        onPasswordCheckChanged = viewModel::onPasswordCheckChanged,
+        onSignUpButtonClicked = viewModel::onSignUpClick
+    )
+}
+
+@Composable
+private fun SignUpScreen(
     id: String,
     username: String,
     password: String,
@@ -30,7 +68,7 @@ fun SignUpScreen(
     onUsernameChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
     onPasswordCheckChanged: (String) -> Unit,
-    onSignUpButtonClicked: () -> Unit
+    onSignUpButtonClicked: () -> Unit,
 ) {
     Surface {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -96,7 +134,8 @@ fun SignUpScreen(
                         .padding(top = 8.dp)
                         .fillMaxWidth(),
                     value = password,
-                    onValueChange = onPasswordChanged
+                    onValueChange = onPasswordChanged,
+                    visualTranformation = PasswordVisualTransformation()
                 )
                 Text(
                     modifier = Modifier.padding(top = 16.dp),
@@ -108,7 +147,8 @@ fun SignUpScreen(
                         .padding(top = 8.dp)
                         .fillMaxWidth(),
                     value = passwordCheck,
-                    onValueChange = onPasswordCheckChanged
+                    onValueChange = onPasswordCheckChanged,
+                    visualTranformation = PasswordVisualTransformation()
                 )
                 MGButton(
                     modifier = Modifier

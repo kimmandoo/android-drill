@@ -58,4 +58,7 @@ dependencies {
     implementation("io.ktor:ktor-client-content-negotiation")
     implementation("io.ktor:ktor-serialization-kotlinx-json")
     implementation(libs.kotlinx.serialization.json)
+    // datastore
+    implementation(libs.datastore)
+    //
 }

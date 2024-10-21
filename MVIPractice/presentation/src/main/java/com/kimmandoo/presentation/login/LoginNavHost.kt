@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navOptions
 
 // NavHost 조차 Composable이다
 @Composable
@@ -21,21 +22,18 @@ fun LoginNavHost() {
             })
         }
         composable(route = LoginRoute.LoginScreen.name) {
-            LoginScreenWithViewModel(onNavigateToSignUpScreen = {
+            LoginScreen(onNavigateToSignUpScreen = {
                 navController.navigate(route = LoginRoute.SignUpScreen.name)
             })
         }
         composable(route = LoginRoute.SignUpScreen.name) {
-            SignUpScreen(
-                id = "dolor",
-                username = "Bradford George",
-                password = "luptatum",
-                passwordCheck = "singulis",
-                onIdChanged = {},
-                onUsernameChanged = {},
-                onPasswordChanged = {},
-                onPasswordCheckChanged = {},
-                onSignUpButtonClicked = {})
+            SignUpScreen(onNavigateToLoginScreen = {
+//                navController.navigate(route = LoginRoute.LoginScreen.name)
+                navController.navigate(route = LoginRoute.LoginScreen.name, navOptions = navOptions {
+                    // 다 날리고 새로 LoginScreen에들어가는 것ㄷ
+                    popUpTo(LoginRoute.WelcomeScreen.name) // WelcomeScreen까지 pop해서 쌓인 스크린을 날리겠다.
+                })
+            })
         }
     }
 }
