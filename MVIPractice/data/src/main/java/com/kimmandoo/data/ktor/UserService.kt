@@ -4,6 +4,8 @@ import android.util.Log
 import com.kimmandoo.data.model.CommonResponse
 import com.kimmandoo.data.model.LoginRequest
 import com.kimmandoo.data.model.SignUpRequest
+import com.kimmandoo.data.model.UserResponse
+import com.kimmandoo.domain.model.User
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -31,6 +33,10 @@ class UserService @Inject constructor(
             setBody(requestBody)
             contentType(ContentType.Application.Json)
         }.body()
+    }
+
+    suspend fun getUserInfo():CommonResponse<UserResponse>{
+        return client.get("users/my-page").body()
     }
 
     suspend fun getTest() {

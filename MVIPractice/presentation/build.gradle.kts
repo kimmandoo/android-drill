@@ -69,4 +69,9 @@ dependencies {
     implementation(libs.orbit.core)
     implementation(libs.orbit.viewmodel)
     implementation(libs.orbit.compose)
+
+    // coil
+    implementation(libs.coil.compose)
+    implementation(libs.coil)
+
 }

@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">MVIPractice</string>
+    <string name="dog_content_description">판다</string>
 </resources>
