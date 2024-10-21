@@ -1,7 +1,9 @@
 package com.kimmandoo.data.di
 
 import android.util.Log
+import com.kimmandoo.data.datastore.UserDataStore
 import com.kimmandoo.data.ktor.UserService
+import com.kimmandoo.domain.usecase.login.GetTokenUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -9,6 +11,7 @@ import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.plugins.DefaultRequest
+import io.ktor.client.plugins.HttpSend
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
@@ -22,18 +25,20 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import javax.inject.Singleton
 
+private const val TAG = "KtorModule"
 @Module
 @InstallIn(SingletonComponent::class)
 object KtorModule {
-    val BASE_URL = "10.0.2.2:8080/api" // localhost
+    val BASE_URL = "192.168.0.21:8080/api" // localhost
     private const val NETWORK_TIME_OUT = 6_000L
 
     @Provides
     @Singleton
-    fun provideKtorClient() = HttpClient(Android) {
+    fun provideKtorClient(getTokenUseCase: GetTokenUseCase) = HttpClient(Android) {
         install(ContentNegotiation) {
             json(
                 Json {
@@ -72,6 +77,16 @@ object KtorModule {
             contentType(ContentType.Application.Json)
             accept(ContentType.Application.Json)
             host = BASE_URL
+        }
+
+        // AccessTokenInterceptor 추가
+        defaultRequest {
+            val token = runBlocking { getTokenUseCase() }
+            Log.d(TAG, "provideKtorClient: $token")
+            token?.let {
+//                headers[HttpHeaders.Authorization] = "Bearer $it"
+                headers["Token"] = "$it"
+            }
         }
     }
 
