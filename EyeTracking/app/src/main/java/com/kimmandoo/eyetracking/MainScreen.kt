@@ -1,32 +1,20 @@
 package com.kimmandoo.eyetracking
 
-import android.graphics.PointF
 import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.isSpecified
+import androidx.compose.ui.geometry.isUnspecified
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
-import com.google.mlkit.vision.face.Face
-import com.kimmandoo.eyetracking.Calibration.CalibrationPointState
-import com.kimmandoo.eyetracking.Calibration.EstimatedGaze
-import com.kimmandoo.eyetracking.Calibration.GazeEstimator
-import com.kimmandoo.eyetracking.Calibration.calibrationDataList
-import com.kimmandoo.eyetracking.Calibration.collectCalibrationData
-import kotlinx.coroutines.delay
 
 private const val TAG = "MainScreen"
 
@@ -34,113 +22,53 @@ private const val TAG = "MainScreen"
 fun MainScreen() {
     var gazePoint by remember { mutableStateOf(Offset.Unspecified) }
     val context = LocalContext.current
-    val isCalibrating = remember { mutableStateOf(true) }
-    var currentCalibrationIndex by remember { mutableStateOf(0) }
-    val gazeEstimator = remember { GazeEstimator() }
-    var shouldCollectData by remember { mutableStateOf(false) }
-    var estimatedGazeState by remember { mutableStateOf<EstimatedGaze?>(null) }
-    var faceState by remember { mutableStateOf<Face?>(null) }
+    var smoothedGazePoint by remember { mutableStateOf(Offset.Unspecified) }
+    val smoothingFactor = 0.2f // 0과 1 사이의 값. 값이 클수록 최근 좌표에 가중치가 더 커짐.
 
-    val calibrationPoints = remember {
-        val points = mutableListOf<CalibrationPointState>()
-        val screenWidth = context.resources.displayMetrics.widthPixels.toFloat()
-        val screenHeight = context.resources.displayMetrics.heightPixels.toFloat()
-
-        val columns = 5
-        val rows = 5
-        val horizontalStep = screenWidth / (columns + 1)
-        val verticalStep = screenHeight / (rows + 1)
-
-        for (i in 1..columns) {
-            for (j in 1..rows) {
-                val x = i * horizontalStep
-                val y = j * verticalStep
-                val point = Offset(x, y)
-                points.add(CalibrationPointState(point))
-            }
+    fun smoothGazePoint(newGazePoint: Offset): Offset {
+        if (smoothedGazePoint.isUnspecified) {
+            // 첫 번째 좌표일 경우, 새로운 좌표로 바로 초기화
+            smoothedGazePoint = newGazePoint
+        } else {
+            // EMA 적용
+            val newX =
+                smoothedGazePoint.x + smoothingFactor * (newGazePoint.x - smoothedGazePoint.x)
+            val newY =
+                smoothedGazePoint.y + smoothingFactor * (newGazePoint.y - smoothedGazePoint.y)
+            smoothedGazePoint = Offset(newX, newY)
         }
-        points
+        return smoothedGazePoint
     }
 
     val analyzer = remember {
-        FaceAnalyzer { faces, image ->
-            val estimatedGaze = estimateGaze(faces, image)
+        FaceAnalyzer { faces ->
+            // 이미지 크기 가져오기 (예시로 480x640 사용)
+            val imageWidth = 480
+            val imageHeight = 640
+            Log.d(TAG, "MainScreen: $faces")
+            val estimatedGaze = estimateGaze(faces, imageWidth, imageHeight)
             if (estimatedGaze != null) {
-                val face = faces[0]
-                if (isCalibrating.value) {
-                    if (currentCalibrationIndex < calibrationPoints.size) {
-                        val currentPointState = calibrationPoints[currentCalibrationIndex]
-                        if (!currentPointState.isCollected) {
-                            estimatedGazeState = estimatedGaze
-                            faceState = face
-                            shouldCollectData = true
-                        }
-                    }
+                // 화면 크기에 맞게 좌표 변환
+                val screenWidth = context.resources.displayMetrics.widthPixels
+                val screenHeight = context.resources.displayMetrics.heightPixels
+                // 좌우 반전을 위해 X 좌표를 반전
+                val mirroredX = screenWidth - (estimatedGaze.x * screenWidth)
+                // 새로 계산한 시선 좌표
+                gazePoint = Offset(
+                    x = mirroredX,
+                    y = estimatedGaze.y * screenHeight
+                )
 
-                    if (currentCalibrationIndex >= calibrationPoints.size) {
-                        Log.d(TAG, "MainScreen: ${calibrationDataList}")
-                        val success = gazeEstimator.trainModel(calibrationDataList)
-                        if (success) {
-                            Log.e(TAG, "Model training success")
-                            isCalibrating.value = false
-                        } else {
-                            Log.e(TAG, "Model training failed")
-                        }
-                    }
-                } else {
-                    val features = doubleArrayOf(
-                        estimatedGaze.leftPupil.x.toDouble(),
-                        estimatedGaze.leftPupil.y.toDouble(),
-                        estimatedGaze.rightPupil.x.toDouble(),
-                        estimatedGaze.rightPupil.y.toDouble(),
-                        face.headEulerAngleX.toDouble(),
-                        face.headEulerAngleY.toDouble()
-                    )
-                    val predictedPoint = gazeEstimator.predict(features)
-                    gazePoint = Offset(predictedPoint.x, predictedPoint.y)
-                }
+                // 시선 좌표를 부드럽게 처리
+                smoothedGazePoint = smoothGazePoint(gazePoint)
+                Log.d(TAG, "Smoothed GazePoint: $smoothedGazePoint")
             }
-        }
-    }
-
-    if (shouldCollectData) {
-        LaunchedEffect(currentCalibrationIndex) {
-            delay(1000L)
-
-            val currentPointState = calibrationPoints[currentCalibrationIndex]
-            collectCalibrationData(
-                faceState!!,
-                estimatedGazeState!!.leftPupil,
-                estimatedGazeState!!.rightPupil,
-                PointF(currentPointState.point.x, currentPointState.point.y)
-            )
-            currentPointState.isCollected = true
-            currentCalibrationIndex++
-            shouldCollectData = false
         }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
         CameraPreview(analyzer = analyzer)
-        if (isCalibrating.value) {
-            val currentPoint = calibrationPoints.getOrNull(currentCalibrationIndex)?.point
-            if (currentPoint != null) {
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    drawCircle(
-                        color = Color.Green,
-                        radius = 20f,
-                        center = currentPoint
-                    )
-                }
-                Text(
-                    text = "녹색 점을 바라봐 주세요.",
-                    color = Color.White,
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 16.dp)
-                )
-            }
-        } else if (gazePoint.isSpecified) {
+        if (gazePoint.isSpecified) {
             Canvas(modifier = Modifier.fillMaxSize()) {
                 drawCircle(
                     color = Color.Red,
