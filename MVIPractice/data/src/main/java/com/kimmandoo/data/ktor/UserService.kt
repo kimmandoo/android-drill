@@ -4,11 +4,13 @@ import android.util.Log
 import com.kimmandoo.data.model.CommonResponse
 import com.kimmandoo.data.model.LoginRequest
 import com.kimmandoo.data.model.SignUpRequest
+import com.kimmandoo.data.model.UpdateMyInfoRequest
 import com.kimmandoo.data.model.UserResponse
 import com.kimmandoo.domain.model.User
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -37,6 +39,13 @@ class UserService @Inject constructor(
 
     suspend fun getUserInfo():CommonResponse<UserResponse>{
         return client.get("users/my-page").body()
+    }
+
+    suspend fun patchUserInfo(requestBody: UpdateMyInfoRequest):CommonResponse<Long>{
+        return client.patch("users/my-page"){
+            contentType(ContentType.Application.Json)
+            setBody(requestBody)
+        }.body()
     }
 
     suspend fun getTest() {

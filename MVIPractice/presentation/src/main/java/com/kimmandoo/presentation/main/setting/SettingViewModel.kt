@@ -5,6 +5,7 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import com.kimmandoo.domain.usecase.login.ClearTokenUseCase
 import com.kimmandoo.domain.usecase.main.setting.GetMyUserUseCase
+import com.kimmandoo.domain.usecase.main.setting.UpdateMyNameUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import org.orbitmvi.orbit.Container
@@ -16,10 +17,12 @@ import org.orbitmvi.orbit.viewmodel.container
 import javax.inject.Inject
 
 private const val TAG = "SettingViewModel"
+
 @HiltViewModel
 class SettingViewModel @Inject constructor(
     private val clearTokenUseCase: ClearTokenUseCase,
     private val getMyUserUseCase: GetMyUserUseCase,
+    private val updateMyNameUseCase: UpdateMyNameUseCase,
 ) : ViewModel(), ContainerHost<SettingState, SettingSideEffect> {
     override val container: Container<SettingState, SettingSideEffect> = container(
         initialState = SettingState(),
@@ -50,6 +53,11 @@ class SettingViewModel @Inject constructor(
     fun onLogoutClick() = intent {
         clearTokenUseCase().getOrThrow() // 예외가 발생하면 SideEffect에서 받을 것
         postSideEffect(SettingSideEffect.NavigateToLogin)
+    }
+
+    fun onUsernameChange(username: String) = intent {
+        updateMyNameUseCase(username).getOrThrow()
+        load()
     }
 
 

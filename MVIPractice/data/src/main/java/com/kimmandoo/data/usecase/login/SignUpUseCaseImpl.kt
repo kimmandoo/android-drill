@@ -1,4 +1,4 @@
-package com.kimmandoo.data.usecase
+package com.kimmandoo.data.usecase.login
 
 import com.kimmandoo.data.ktor.UserService
 import com.kimmandoo.data.model.SignUpRequest

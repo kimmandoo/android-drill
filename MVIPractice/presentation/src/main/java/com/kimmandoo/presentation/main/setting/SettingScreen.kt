@@ -21,6 +21,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -54,13 +58,27 @@ fun SettingScreen(
             }
         }
     }
+    var usernameDialogVisible by remember {
+        mutableStateOf(false)
+    }
 
     SettingScreen(
         username = state.username,
         profileImageUrl = state.profileImageUrl,
         onImageChangeClick = {},
-        onNameChangeClick = {},
+        onNameChangeClick = {
+            usernameDialogVisible = true
+        },
         onLogoutClick = viewModel::onLogoutClick
+    )
+
+    UsernameDialog(
+        visible = usernameDialogVisible,
+        initialUsername = state.username,
+        onUsernameChange = viewModel::onUsernameChange,
+        onDismissRequest = {
+            usernameDialogVisible = false
+        }
     )
 }
 

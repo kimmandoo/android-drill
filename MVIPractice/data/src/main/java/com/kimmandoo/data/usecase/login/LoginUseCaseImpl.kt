@@ -1,13 +1,10 @@
-package com.kimmandoo.data.usecase
+package com.kimmandoo.data.usecase.login
 
-import android.util.Log
 import com.kimmandoo.data.ktor.UserService
 import com.kimmandoo.data.model.LoginRequest
 import com.kimmandoo.domain.usecase.login.LoginUseCase
 import javax.inject.Inject
 
-// jakarta.inject.Inject 쓰면 안된다.
-private const val TAG = "LoginUseCaseImpl"
 class LoginUseCaseImpl @Inject constructor(
     private val userService: UserService
 ) : LoginUseCase {
