@@ -2,6 +2,7 @@ package com.kimmandoo.data.di
 
 import android.util.Log
 import com.kimmandoo.data.datastore.UserDataStore
+import com.kimmandoo.data.ktor.ImageService
 import com.kimmandoo.data.ktor.UserService
 import com.kimmandoo.domain.usecase.login.GetTokenUseCase
 import dagger.Module
@@ -30,10 +31,11 @@ import kotlinx.serialization.json.Json
 import javax.inject.Singleton
 
 private const val TAG = "KtorModule"
+val BASE_URL = "10.0.2.2:8080/api" // localhost
+
 @Module
 @InstallIn(SingletonComponent::class)
 object KtorModule {
-    val BASE_URL = "10.0.2.2:8080/api" // localhost
 //    val BASE_URL = "192.168.0.21:8080/api" // 집
     private const val NETWORK_TIME_OUT = 6_000L
 
@@ -95,5 +97,11 @@ object KtorModule {
     @Singleton
     fun provideUserService(httpClient: HttpClient): UserService {
         return UserService(httpClient)
+    }
+
+    @Provides
+    @Singleton
+    fun provideImageService(httpClient: HttpClient): ImageService {
+        return ImageService(httpClient)
     }
 }

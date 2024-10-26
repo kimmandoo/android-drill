@@ -2,6 +2,10 @@ package com.kimmandoo.presentation.main.setting
 
 import android.content.Intent
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -37,6 +41,7 @@ import com.kimmandoo.presentation.login.LoginActivity
 import com.kimmandoo.presentation.theme.MVIPracticeTheme
 import org.orbitmvi.orbit.compose.collectAsState
 import org.orbitmvi.orbit.compose.collectSideEffect
+import kotlin.contracts.contract
 
 @Composable
 fun SettingScreen(
@@ -62,10 +67,25 @@ fun SettingScreen(
         mutableStateOf(false)
     }
 
+    val visualMediaPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri ->
+            // 이미지가 선택이 된 상태
+            uri?.let {
+                viewModel.onImageChange(it)
+            }
+        })
+
     SettingScreen(
         username = state.username,
         profileImageUrl = state.profileImageUrl,
-        onImageChangeClick = {},
+        onImageChangeClick = {
+            visualMediaPickerLauncher.launch(
+                PickVisualMediaRequest(
+                    mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly
+                )
+            )
+        },
         onNameChangeClick = {
             usernameDialogVisible = true
         },

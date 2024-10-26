@@ -48,6 +48,7 @@ fun UsernameDialog(
                     Row {
                         TextButton(modifier = Modifier.weight(1f), onClick = {
                             onUsernameChange(username)
+                            onDismissRequest()
                         }) {
                             Text("변경")
                         }

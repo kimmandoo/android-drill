@@ -3,22 +3,22 @@ package com.kimmandoo.data.usecase.setting
 import com.kimmandoo.data.ktor.UserService
 import com.kimmandoo.data.model.UpdateMyInfoRequest
 import com.kimmandoo.domain.usecase.main.setting.GetMyUserUseCase
-import com.kimmandoo.domain.usecase.main.setting.UpdateMyNameUseCase
+import com.kimmandoo.domain.usecase.main.setting.UpdateMyUserUseCase
 import javax.inject.Inject
 
-class UpdateMyNameUseCaseImpl @Inject constructor(
+class UpdateMyUserUseCaseImpl @Inject constructor(
     private val userService: UserService,
     private val getMyUserUseCase: GetMyUserUseCase,
-) :
-    UpdateMyNameUseCase {
+) : UpdateMyUserUseCase {
     override suspend fun invoke(
-        username: String,
+        username: String?,
+        profileImageUrl: String?
     ): Result<Unit> = runCatching {
         val user = getMyUserUseCase().getOrThrow()
         val request = UpdateMyInfoRequest(
-            userName = username,
+            userName = username?: user.username,
             extraUserInfo = " ",
-            profileFilePath = user.profileImageUrl.orEmpty()
+            profileFilePath = profileImageUrl ?: user.profileImageUrl.orEmpty()
         )
         userService.patchUserInfo(request)
     }
