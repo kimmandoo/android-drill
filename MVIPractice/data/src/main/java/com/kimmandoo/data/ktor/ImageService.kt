@@ -43,7 +43,7 @@ class ImageService @Inject constructor(
                 )
             )
             onUpload { bytesSentTotal, contentLength ->
-                println("Sent $bytesSentTotal bytes from $contentLength")
+                Log.d(TAG, "Sent $bytesSentTotal bytes from $contentLength")
             }
         }.body()
     }
