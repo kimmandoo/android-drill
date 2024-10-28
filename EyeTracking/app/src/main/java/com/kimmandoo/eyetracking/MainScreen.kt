@@ -12,6 +12,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -27,16 +28,20 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.unit.dp
+import kotlin.math.floor
 
 private const val TAG = "MainScreen"
 
 @Composable
 fun MainScreen() {
+    val gridRows = 5 // 격자의 행 개수
+    val gridCols = 5 // 격자의 열 개수
+    val cellCounts = remember { mutableStateListOf(*Array(gridRows * gridCols) { 0 }) }
     var gazePoint by remember { mutableStateOf(Offset.Unspecified) }
     val context = LocalContext.current
     var smoothedGazePoint by remember { mutableStateOf(Offset.Unspecified) }
     val smoothingFactor = 0.1f // 0과 1 사이의 값. 값이 클수록 최근 좌표에 가중치가 더 커짐.
-    val boundaryOffset = -100f // 화면 경계 여백 (50px)
+    val boundaryOffset = -80f // 화면 경계 여백 (50px)
     var zeroPoint by remember { mutableStateOf(Offset.Zero) } // 영점 조절을 위한 기준 좌표
 
     // 이동 평균 필터 적용 함수
@@ -82,6 +87,16 @@ fun MainScreen() {
                 // 시선 좌표를 부드럽게 처리
                 smoothedGazePoint = smoothGazePoint(gazePoint)
                 Log.d(TAG, "Smoothed GazePoint: $smoothedGazePoint")
+                // 격자 셀 인덱스 계산 및 카운트 증가
+                val cellWidth = screenWidth / gridCols
+                val cellHeight = screenHeight / gridRows
+                val col = floor(smoothedGazePoint.x / cellWidth).toInt().coerceIn(0, gridCols - 1)
+                val row = floor(smoothedGazePoint.y / cellHeight).toInt().coerceIn(0, gridRows - 1)
+                val cellIndex = row * gridCols + col
+
+                // 셀의 카운트를 증가
+                cellCounts[cellIndex]++
+                Log.d(TAG, "Cell $cellIndex count: ${cellCounts[cellIndex]}")
             }
         }
     }
@@ -116,14 +131,54 @@ fun MainScreen() {
             }
         }
 
-        // 눈동자 위치를 나타내는 빨간 점 그리기
-        if (smoothedGazePoint.isSpecified) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
+
+        // 격자 및 시선을 나타내는 빨간 점과 카운트 텍스트 그리기
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val screenWidth = size.width
+            val screenHeight = size.height
+            val cellWidth = screenWidth / gridCols
+            val cellHeight = screenHeight / gridRows
+
+            // 격자 그리기
+            for (row in 0 until gridRows) {
+                for (col in 0 until gridCols) {
+                    val cellIndex = row * gridCols + col
+                    val left = col * cellWidth
+                    val top = row * cellHeight
+
+                    // 셀의 테두리와 배경 그리기
+                    drawRect(
+                        color = Color.LightGray,
+                        topLeft = Offset(left, top),
+                        size = androidx.compose.ui.geometry.Size(cellWidth, cellHeight)
+                    )
+
+                    // 각 셀의 카운트 텍스트 그리기
+                    drawIntoCanvas { canvas ->
+                        val paint = Paint().asFrameworkPaint().apply {
+                            isAntiAlias = true
+                            textSize = 30f
+                            color = android.graphics.Color.BLACK
+                        }
+                        val text = cellCounts[cellIndex].toString()
+                        canvas.nativeCanvas.drawText(
+                            text,
+                            left + cellWidth / 2 - 10,
+                            top + cellHeight / 2 + 10,
+                            paint
+                        )
+                    }
+                }
+            }
+
+            // 시선 위치를 나타내는 빨간 점 그리기
+            if (smoothedGazePoint.isSpecified) {
                 drawCircle(
                     color = Color.Red,
                     radius = 15f,
-                    center = smoothedGazePoint,
+                    center = smoothedGazePoint
                 )
+
                 // x, y 좌표 텍스트 그리기
                 drawIntoCanvas { canvas ->
                     val paint = Paint().asFrameworkPaint().apply {
@@ -135,7 +190,7 @@ fun MainScreen() {
                     canvas.nativeCanvas.drawText(
                         text,
                         smoothedGazePoint.x,
-                        smoothedGazePoint.y + 50, // 점 아래에 텍스트 위치
+                        smoothedGazePoint.y + 50,
                         paint
                     )
                 }
