@@ -16,10 +16,12 @@ import com.kimmandoo.emotionrecognition.ui.theme.EmotionRecognitionTheme
 class MainActivity : ComponentActivity() {
     private lateinit var mClassifier: TFLiteImageClassifier
     private val modelFileName = "simple_classifier.tflite"
+    // angry, disgust, fear, happy, neutral, sad, surprise.
     private val labels = arrayOf("angry", "disgust", "fear","happy","neutral","sad","surprise")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         mClassifier = TFLiteImageClassifier(
             assets,
             modelFileName,

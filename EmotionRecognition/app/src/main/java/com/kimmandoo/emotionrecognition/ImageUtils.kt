@@ -14,6 +14,7 @@ fun rotateImage(contentResolver: ContentResolver, imageBitmap: Bitmap, imageUri:
 }
 
 private fun getOrientationAngle(contentResolver: ContentResolver, uri: Uri): Int {
+    // 혹시 모르니까 정방향으로 돌리는 로직
     contentResolver.openInputStream(uri)?.use { inputStream ->
         val exif = ExifInterface(inputStream)
         return when (exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)) {

@@ -10,11 +10,9 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
@@ -26,12 +24,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import com.google.android.datatransport.BuildConfig
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -39,6 +35,7 @@ import java.util.Locale
 
 
 private const val TAG = "EmotionRecognitionScree"
+
 @Composable
 fun EmotionRecognitionScreen(mClassifier: TFLiteImageClassifier) {
     var imageUri by remember { mutableStateOf<Uri?>(null) }
@@ -58,39 +55,44 @@ fun EmotionRecognitionScreen(mClassifier: TFLiteImageClassifier) {
         }
     }
 
-    val takePictureLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-        if (success) {
-            imageUri?.let { uri ->
-                try {
-                    context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                        val bitmap = BitmapFactory.decodeStream(inputStream)
-                        if (bitmap == null) {
-                            Log.e(TAG, "Failed to decode bitmap from input stream")
-                        } else {
-                            Log.d(TAG, "Bitmap loaded successfully: $bitmap")
-                            val rotatedBitmap = rotateImage(context.contentResolver, bitmap, uri)
-                            classificationResult = mClassifier.classify(rotatedBitmap)
+    val takePictureLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+            if (success) {
+                imageUri?.let { uri ->
+                    try {
+                        context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                            val bitmap = BitmapFactory.decodeStream(inputStream)
+                            if (bitmap == null) {
+                                Log.e(TAG, "Failed to decode bitmap from input stream")
+                            } else {
+                                Log.d(TAG, "Bitmap loaded successfully: $bitmap")
+                                val rotatedBitmap =
+                                    rotateImage(context.contentResolver, bitmap, uri)
+                                classificationResult = mClassifier.classify(rotatedBitmap)
+                            }
                         }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error loading bitmap from input stream", e)
                     }
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error loading bitmap from input stream", e)
                 }
             }
         }
-    }
 
-    val pickImageLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        imageUri = uri
-        uri?.let {
-            val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
-            val rotatedBitmap = rotateImage(context.contentResolver, bitmap, uri) // 이미지 회전 추가
-            classificationResult = mClassifier.classify(rotatedBitmap)
+    val pickImageLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            imageUri = uri
+            uri?.let {
+                val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+                val rotatedBitmap = rotateImage(context.contentResolver, bitmap, uri) // 이미지 회전 추가
+                classificationResult = mClassifier.classify(rotatedBitmap)
+            }
         }
-    }
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
         imageUri?.let { uri ->
             try {
                 context.contentResolver.openInputStream(uri)?.use { inputStream ->
@@ -114,14 +116,19 @@ fun EmotionRecognitionScreen(mClassifier: TFLiteImageClassifier) {
         }
 
         Spacer(modifier = Modifier.height(8.dp))
-        Button(onClick = {if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-            captureImage(context) { uri ->
-                imageUri = uri
-                takePictureLauncher.launch(uri)
+        Button(onClick = {
+            if (ContextCompat.checkSelfPermission(
+                    context,
+                    android.Manifest.permission.CAMERA
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                captureImage(context) { uri ->
+                    imageUri = uri
+                    takePictureLauncher.launch(uri)
+                }
+            } else {
+                cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA)
             }
-        } else {
-            cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA)
-        }
         }) {
             Text("사진 촬영")
         }
@@ -130,25 +137,23 @@ fun EmotionRecognitionScreen(mClassifier: TFLiteImageClassifier) {
             Spacer(modifier = Modifier.height(16.dp))
             Text("감정 분석 결과:", style = MaterialTheme.typography.headlineSmall)
             result.forEach { (emotion, probability) ->
-                Text("$emotion: ${String.format("%.1f", probability * 100)}%", style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    "$emotion: ${String.format("%.1f", probability * 100)}%",
+                    style = MaterialTheme.typography.bodyLarge
+                )
             }
         }
     }
 }
 
-// 이미지 파일 생성 함수
 fun captureImage(context: Context, onImageFileCreated: (Uri) -> Unit) {
     val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
     val storageDir: File? = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
     val photoFile = File.createTempFile("JPEG_${timeStamp}_", ".jpg", storageDir)
-    val imageUri = FileProvider.getUriForFile(context, "com.kimmandoo.emotionrecognition.fileprovider", photoFile)
+    val imageUri = FileProvider.getUriForFile(
+        context,
+        "com.kimmandoo.emotionrecognition.fileprovider",
+        photoFile
+    )
     onImageFileCreated(imageUri)
-}
-
-fun createImageFile(context: Context): File {
-    val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-    val storageDir: File? = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-    return File.createTempFile("JPEG_${timeStamp}_", ".jpg", storageDir).apply {
-        Log.d(TAG, "Created image file at: $absolutePath")
-    }
 }

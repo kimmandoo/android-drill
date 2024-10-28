@@ -40,12 +40,6 @@ android {
     androidResources {
         noCompress("tflite", "lite")
     }
-
-    configurations.all {
-        resolutionStrategy {
-            force("org.tensorflow:tensorflow-lite-gpu:2.11.0")
-        }
-    }
 }
 
 dependencies {
@@ -65,9 +59,7 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     implementation("org.tensorflow:tensorflow-lite:2.11.0")
-    implementation("org.tensorflow:tensorflow-lite-gpu:2.11.0")
+//    implementation("org.tensorflow:tensorflow-lite-gpu:2.11.0")
     implementation("com.google.mlkit:face-detection:16.1.7")
 }
