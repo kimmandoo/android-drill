@@ -3,14 +3,19 @@ package com.kimmandoo.eyetracking
 import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.isSpecified
@@ -21,6 +26,7 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.drawText
+import androidx.compose.ui.unit.dp
 
 private const val TAG = "MainScreen"
 
@@ -31,6 +37,7 @@ fun MainScreen() {
     var smoothedGazePoint by remember { mutableStateOf(Offset.Unspecified) }
     val smoothingFactor = 0.1f // 0과 1 사이의 값. 값이 클수록 최근 좌표에 가중치가 더 커짐.
     val boundaryOffset = -100f // 화면 경계 여백 (50px)
+    var zeroPoint by remember { mutableStateOf(Offset.Zero) } // 영점 조절을 위한 기준 좌표
 
     // 이동 평균 필터 적용 함수
     fun smoothGazePoint(newGazePoint: Offset): Offset {
@@ -56,13 +63,16 @@ fun MainScreen() {
                 val screenHeight = context.resources.displayMetrics.heightPixels
                 // 좌우 반전을 위해 X 좌표를 반전
                 val mirroredX = screenWidth - (estimatedGaze.x * screenWidth)
+                // 영점 조절 기준 좌표 적용
+                val adjustedX = mirroredX - zeroPoint.x
+                val adjustedY = (estimatedGaze.y * screenHeight) - zeroPoint.y
+
                 // 새로 계산한 시선 좌표
                 // 점이 화면 경계를 넘어가지 않도록 제한
-                val constrainedX = mirroredX.coerceIn(boundaryOffset, screenWidth - boundaryOffset)
-                val constrainedY = (estimatedGaze.y * screenHeight).coerceIn(
-                    boundaryOffset,
-                    screenHeight - boundaryOffset
-                )
+                // 화면 경계를 넘지 않도록 제한
+                val constrainedX = adjustedX.coerceIn(boundaryOffset, screenWidth - boundaryOffset)
+                val constrainedY = adjustedY.coerceIn(boundaryOffset, screenHeight - boundaryOffset)
+
 
                 gazePoint = Offset(
                     x = constrainedX,
@@ -83,6 +93,28 @@ fun MainScreen() {
             .background(Color.White) // 배경을 단색으로 설정
     ) {
         CameraPreview(analyzer = analyzer) // 카메라 연결은 그대로 유지
+        // 중앙에 영점 조절 버튼을 추가
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Bottom,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Button(onClick = {
+                // 화면 중앙 좌표 계산
+                val screenWidth = context.resources.displayMetrics.widthPixels
+                val screenHeight = context.resources.displayMetrics.heightPixels
+                val centerPoint = Offset(screenWidth / 2f, screenHeight / 2f)
+
+                // 현재 gazePoint를 영점으로 설정하고 빨간 점을 화면 중앙으로 이동
+                zeroPoint = smoothedGazePoint
+                gazePoint = centerPoint
+                smoothedGazePoint = centerPoint
+            }) {
+                Text("중앙")
+            }
+        }
 
         // 눈동자 위치를 나타내는 빨간 점 그리기
         if (smoothedGazePoint.isSpecified) {
