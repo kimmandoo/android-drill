@@ -1,6 +1,7 @@
 package com.kimmandoo.eyetracking
 
 import android.util.Log
+import android.view.View
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
@@ -22,6 +23,9 @@ fun CameraPreview(analyzer: ImageAnalysis.Analyzer) {
     AndroidView(
         factory = { ctx ->
             val previewView = PreviewView(ctx)
+            previewView.scaleType = PreviewView.ScaleType.FIT_CENTER // UI에 표시되지 않게 설정
+            previewView.visibility = View.INVISIBLE // 카메라 프리뷰 숨기기
+
             val cameraProviderFuture = ProcessCameraProvider.getInstance(ctx)
 
             cameraProviderFuture.addListener({
