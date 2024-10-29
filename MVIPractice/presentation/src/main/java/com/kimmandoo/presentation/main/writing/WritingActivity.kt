@@ -7,12 +7,12 @@ import com.kimmandoo.presentation.theme.MVIPracticeTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class WritingActivity: ComponentActivity() {
+class WritingActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             MVIPracticeTheme {
-                WritingNavHost()
+                WritingNavHost(onFinish = { finish() })
             }
         }
     }

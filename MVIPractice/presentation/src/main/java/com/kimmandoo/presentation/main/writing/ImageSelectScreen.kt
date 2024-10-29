@@ -44,14 +44,16 @@ import org.orbitmvi.orbit.compose.collectAsState
 @Composable
 fun ImageSelectScreen(
     viewModel: WritingViewModel,
+    onBackClick: () -> Unit, // navigation까지 올려줘야됨
+    onNextClick: () -> Unit
 ) {
     val state = viewModel.collectAsState().value
 
     ImageSelectScreen(
         selectedImages = state.selectedImages,
         images = state.images,
-        onBackClick = { },
-        onNextClick = { },
+        onBackClick = onBackClick,
+        onNextClick = onNextClick,
         onImageClick = viewModel::onImageClick
     )
 }
@@ -71,9 +73,7 @@ private fun ImageSelectScreen(
                 Text(text = "새 글쓰기", style = MaterialTheme.typography.headlineSmall)
             },
                 navigationIcon = {
-                    IconButton(onClick = {
-                        onBackClick
-                    }) {
+                    IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                             contentDescription = "뒤로가기"

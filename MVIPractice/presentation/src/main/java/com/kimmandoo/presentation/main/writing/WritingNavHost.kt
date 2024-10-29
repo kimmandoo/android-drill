@@ -8,7 +8,9 @@ import androidx.navigation.compose.rememberNavController
 
 
 @Composable
-fun WritingNavHost() {
+fun WritingNavHost(
+    onFinish: () -> Unit, // 액티비티를 종료할 것이기 때문에 액티비티까지 이벤트를 끌어올려준다
+) {
     val controller = rememberNavController()
     val sharedViewModel: WritingViewModel = viewModel()
     NavHost(
@@ -16,11 +18,20 @@ fun WritingNavHost() {
         startDestination = WritingRoute.IMAGE_SELECT_SCREEN.route
     ) {
         composable(route = WritingRoute.IMAGE_SELECT_SCREEN.route) {
-            ImageSelectScreen(viewModel = sharedViewModel)
+            ImageSelectScreen(
+                viewModel = sharedViewModel,
+                onBackClick = onFinish,
+                onNextClick = {
+                    controller.navigate(WritingRoute.WRITING_SCREEN.route)
+                }
+            )
         }
 
         composable(route = WritingRoute.WRITING_SCREEN.route) {
-
+            WritingScreen(viewModel = sharedViewModel, onBackClick = {
+                controller.navigateUp()
+            }
+            )
         }
     }
 }

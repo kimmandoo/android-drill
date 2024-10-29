@@ -10,6 +10,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import org.orbitmvi.orbit.Container
 import org.orbitmvi.orbit.ContainerHost
+import org.orbitmvi.orbit.annotation.OrbitExperimental
+import org.orbitmvi.orbit.syntax.simple.blockingIntent
 import org.orbitmvi.orbit.syntax.simple.intent
 import org.orbitmvi.orbit.syntax.simple.postSideEffect
 import org.orbitmvi.orbit.syntax.simple.reduce
@@ -60,12 +62,27 @@ class WritingViewModel @Inject constructor(
             )
         }
     }
+
+    @OptIn(OrbitExperimental::class)
+    fun onTextChanged(input: String) = blockingIntent {
+        reduce {
+            state.copy(
+                text = input
+            )
+        }
+    }
+
+    fun onPostClick() = intent {
+        val writingState = state
+        // selectedImage랑 text만 뽑아서 전송하면 됨
+    }
 }
 
 @Immutable
 data class WritingState(
     val images: List<Image> = emptyList(),
     val selectedImages: List<Image> = emptyList(),
+    val text: String = "",
 )
 
 sealed interface WritingSideEffect {
