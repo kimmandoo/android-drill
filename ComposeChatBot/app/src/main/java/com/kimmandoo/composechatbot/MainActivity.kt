@@ -56,7 +56,6 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
             ComposeChatBotTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->

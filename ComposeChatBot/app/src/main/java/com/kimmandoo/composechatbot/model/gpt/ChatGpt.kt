@@ -4,7 +4,8 @@ import com.google.gson.annotations.SerializedName
 
 data class ChatGpt(
     @SerializedName("model") val model: String,
-    @SerializedName("messages") val messages: List<Message>
+    @SerializedName("messages") val messages: List<Message>,
+    @SerializedName("stream") val stream: Boolean = true
 )
 
 data class ChatGptResponse(

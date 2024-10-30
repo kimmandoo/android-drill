@@ -8,6 +8,8 @@ import androidx.lifecycle.viewModelScope
 import com.kimmandoo.composechatbot.model.MessageType
 import com.kimmandoo.composechatbot.model.gpt.Message
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 class ChatViewModel : ViewModel() {
@@ -16,6 +18,8 @@ class ChatViewModel : ViewModel() {
 
     var inputText by mutableStateOf("")
         private set
+
+    private var currentGptMessage = "" // GPT가 작성 중인 메시지
 
     val chatRepository = ChatRepository()
 
@@ -26,29 +30,36 @@ class ChatViewModel : ViewModel() {
     fun sendMessage() {
         if (inputText.isNotBlank()) {
             viewModelScope.launch {
+                // 사용자의 입력 메시지 추가
                 messages = messages + MessageType(0, inputText)
-                val response = getGPTResponse(inputText)  // 여기서 GPT API 호출
-                messages = messages + MessageType(1, response)
                 inputText = ""
+
+                // 새로운 메시지 전송을 위해 GPT 메시지 초기화
+                currentGptMessage = ""
+
+                // 시스템 및 사용자 메시지 설정
+                val messageList = listOf(
+                    Message(role = "system", content = "그리고 말투는 ~습니다. 로 마무리해"),
+                    Message(role = "user", content = inputText)
+                )
+
+                // 스트리밍 응답 수신
+                chatRepository.getChatGptResponseStream(messageList).onEach { responseChunk ->
+                    currentGptMessage += responseChunk // 새로운 청크 추가
+
+                    // 기존 GPT 메시지를 덮어쓰지 않고 누적되도록 함
+                    updateGptMessage()
+                }.launchIn(viewModelScope)
             }
         }
     }
 
-    private suspend fun getGPTResponse(message: String): String {
-        val response = CompletableDeferred<String>()
-        viewModelScope.launch {
-            val messages = listOf(
-                Message(role = "system", content = "모든 답변은 200글자 이내로 해줘" + "그리고 말투는 ~습니다. 로 마무리해"),
-                Message(role = "user", content = message)
-            )
-            runCatching {
-                chatRepository.getChatGptResponse(messages).choices.first().message.content
-            }.onSuccess {
-                response.complete(it)
-            }.onFailure {
-                response.complete("오류가 발생했습니다. 잠시후 다시 시작해주세요")
-            }
+    private fun updateGptMessage() {
+        // GPT 메시지를 누적하여 마지막 메시지로 업데이트
+        if (messages.isNotEmpty() && messages.last().type == 1) {
+            messages = messages.dropLast(1) + MessageType(1, currentGptMessage)
+        } else {
+            messages = messages + MessageType(1, currentGptMessage)
         }
-        return response.await()
     }
 }
