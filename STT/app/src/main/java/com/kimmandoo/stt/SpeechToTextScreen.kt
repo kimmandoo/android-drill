@@ -43,7 +43,7 @@ fun SpeechToTextScreen() {
     var isEndOfSpeech by remember { mutableStateOf(false) }
 
     val speechIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-        Log.d(TAG, "SpeechToTextScreen: ${VERSION.SDK_INT}") // flip은 34
+//        Log.d(TAG, "SpeechToTextScreen: ${VERSION.SDK_INT}") // flip은 34
         putExtra(RecognizerIntent.EXTRA_ONLY_RETURN_LANGUAGE_PREFERENCE, true)
         putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, Locale.KOREAN)
         putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.KOREAN)
