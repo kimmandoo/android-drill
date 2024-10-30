@@ -14,12 +14,16 @@ import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.os.BuildCompat
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 
@@ -30,15 +34,21 @@ fun SpeechToTextScreen() {
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
 // 화면이 회전해도 고정된 UI를 유지
-    val rotationAngle = if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) -90f else 0f
+    val rotationAngle =
+        if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) -90f else 0f
 
     val speechRecognizer = remember { SpeechRecognizer.createSpeechRecognizer(context) }
     var recognizedText by remember { mutableStateOf("") }
     var isListening by remember { mutableStateOf(false) }
+    var isEndOfSpeech by remember { mutableStateOf(false) }
 
     val speechIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
         Log.d(TAG, "SpeechToTextScreen: ${VERSION.SDK_INT}") // flip은 34
         putExtra(RecognizerIntent.EXTRA_ONLY_RETURN_LANGUAGE_PREFERENCE, true)
+        putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, Locale.KOREAN)
+        putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.KOREAN)
+        putExtra(RecognizerIntent.EXTRA_CONFIDENCE_SCORES, true)
+        putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
         if (VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             putExtra(RecognizerIntent.EXTRA_SEGMENTED_SESSION, true)
             putExtra(
@@ -47,16 +57,14 @@ fun SpeechToTextScreen() {
             )
             putExtra(RecognizerIntent.EXTRA_MASK_OFFENSIVE_WORDS, true)
         }
-        putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
         if (VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { // 34
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_DETECTION_ALLOWED_LANGUAGES, true)
         }
-        putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, Locale.KOREAN)
-        putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.KOREAN)
-        putExtra(RecognizerIntent.EXTRA_CONFIDENCE_SCORES, true)
-
     }
 
+    // 코루틴 스코프를 기억
+    val coroutineScope = rememberCoroutineScope()
+    var rmsDB by remember { mutableFloatStateOf(0f) }
     val recognitionListener = object : RecognitionListener {
         override fun onResults(results: Bundle?) {
             val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
@@ -100,6 +108,7 @@ fun SpeechToTextScreen() {
             // 음성 인식 중에 마이크의 입력 음량을 나타내는 RMS(Root Mean Square) 값이 변경될 때 호출
             // db단위로 뭔가 할 수 있음
             Log.d("STT", "RMS changed: $rmsdB")
+            rmsDB = rmsdB
         }
 
         override fun onBufferReceived(buffer: ByteArray?) {
@@ -110,15 +119,23 @@ fun SpeechToTextScreen() {
             Log.d("STT", "End of speech")
             // EndOfSpeech가 호출되면 다시 시작
             isListening = false
-            Handler(Looper.getMainLooper()).postDelayed({
+            speechRecognizer.stopListening()
+            coroutineScope.launch {
+                delay(500) // 500ms 지연
                 isListening = true
                 speechRecognizer.startListening(speechIntent)
-            }, 500) // 500ms 지연 후 다시 시작
+            }
+//            Handler(Looper.getMainLooper()).postDelayed({
+//                isListening = true
+//                speechRecognizer.startListening(speechIntent)
+//            }, 500) // 500ms 지연 후 다시 시작
         }
 
         override fun onPartialResults(partialResults: Bundle?) {
 //            Log.d("STT", "Partial results $partialResults")
-            val partialText = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull()
+            val partialText =
+                partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                    ?.firstOrNull()
             Log.d("STT", "Partial results: $partialText")
         }
 
