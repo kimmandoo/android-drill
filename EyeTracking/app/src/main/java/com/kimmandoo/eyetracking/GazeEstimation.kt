@@ -49,4 +49,4 @@ fun estimateGaze(faces: List<Face>): Offset? {
     return null
 }
 
-private const val YAW_PITCH = 50
+private const val YAW_PITCH = 80

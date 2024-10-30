@@ -1,5 +1,6 @@
 package com.kimmandoo.eyetracking
 
+import android.content.res.Configuration
 import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -18,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.isSpecified
 import androidx.compose.ui.geometry.isUnspecified
@@ -25,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.unit.dp
@@ -43,6 +46,11 @@ fun MainScreen() {
     val smoothingFactor = 0.1f // 0과 1 사이의 값. 값이 클수록 최근 좌표에 가중치가 더 커짐.
     val boundaryOffset = -80f // 화면 경계 여백 (50px)
     var zeroPoint by remember { mutableStateOf(Offset.Zero) } // 영점 조절을 위한 기준 좌표
+
+    val configuration = LocalConfiguration.current
+// 화면이 회전해도 고정된 UI를 유지
+    val rotationAngle =
+        if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) -90f else 0f
 
     // 이동 평균 필터 적용 함수
     fun smoothGazePoint(newGazePoint: Offset): Offset {
@@ -105,6 +113,7 @@ fun MainScreen() {
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .rotate(rotationAngle)
             .background(Color.White) // 배경을 단색으로 설정
     ) {
         CameraPreview(analyzer = analyzer) // 카메라 연결은 그대로 유지
@@ -113,8 +122,7 @@ fun MainScreen() {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.Bottom,
-            horizontalAlignment = Alignment.CenterHorizontally
+
         ) {
             Button(onClick = {
                 // 화면 중앙 좌표 계산
