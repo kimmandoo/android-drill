@@ -114,9 +114,6 @@ fun ChatBot(viewModel: ChatViewModel, modifier: Modifier = Modifier) {
             modifier = Modifier
                 .height(60.dp)
                 .fillMaxWidth()
-                .windowInsetsPadding(
-                    WindowInsets.ime.exclude(WindowInsets.navigationBars)
-                )
                 .padding(horizontal = 8.dp, vertical = 4.dp)
         ) {
             TextField(
