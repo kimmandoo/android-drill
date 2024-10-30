@@ -7,10 +7,13 @@ import com.google.mlkit.vision.face.FaceLandmark
 
 private const val TAG = "GazeEstimation"
 
-fun estimateGaze(faces: List<Face>, imageWidth: Int, imageHeight: Int): Offset? {
+fun estimateGaze(faces: List<Face>): Offset? {
     if (faces.isEmpty()) return null
 
     val face = faces[0]
+    val imageWidth = face.boundingBox.width()
+    val imageHeight = face.boundingBox.height()
+    Log.d(TAG, "box: $imageWidth, $imageHeight")
 
     val leftEye = face.getLandmark(FaceLandmark.LEFT_EYE)?.position
     val rightEye = face.getLandmark(FaceLandmark.RIGHT_EYE)?.position
@@ -46,4 +49,4 @@ fun estimateGaze(faces: List<Face>, imageWidth: Int, imageHeight: Int): Offset? 
     return null
 }
 
-private const val YAW_PITCH = 30
+private const val YAW_PITCH = 80

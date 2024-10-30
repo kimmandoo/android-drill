@@ -32,6 +32,7 @@ import javax.inject.Singleton
 
 private const val TAG = "KtorModule"
 val BASE_URL = "10.0.2.2:8080/api" // localhost
+//val BASE_URL = "192.168.56.1:8080/api" // localhost - ssafy
 
 @Module
 @InstallIn(SingletonComponent::class)

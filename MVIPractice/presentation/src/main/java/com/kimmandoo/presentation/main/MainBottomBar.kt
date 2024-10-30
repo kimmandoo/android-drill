@@ -1,6 +1,12 @@
 package com.kimmandoo.presentation.main
 
+import android.Manifest.permission.READ_EXTERNAL_STORAGE
+import android.Manifest.permission.READ_MEDIA_IMAGES
+import android.Manifest.permission.READ_MEDIA_VIDEO
 import android.content.Intent
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,12 +41,28 @@ fun MainBottomBar(
         MainRoute.entries.find { route -> route.route == currentRoute }
     } ?: MainRoute.BOARD // 현재 라우트 가져오기
     // ?:로 처리해서 non-null로 처리
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions(),
+    ) {
+        context.startActivity(
+            Intent(context, WritingActivity::class.java)
+        )
+    }
+
     MainBottomBar(
         currentRoute = currentRoute,
         onItemClick = { newRoute ->
             if (newRoute == MainRoute.WRITING) {
-                // 글쓰기의 경우 startActivity
-                context.startActivity(Intent(context, WritingActivity::class.java))
+                // 글쓰기의 경우 startActivity -> 근데 permission한번 체크하고 받아온다
+
+//                context.startActivity(Intent(context, WritingActivity::class.java))
+                // tiramisu에서부터 분기가 좀 다름
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    permissionLauncher.launch(arrayOf(READ_MEDIA_IMAGES, READ_MEDIA_VIDEO))
+                } else {
+                    permissionLauncher.launch(arrayOf(READ_EXTERNAL_STORAGE))
+                }
             } else {
                 navController.navigate(route = newRoute.route) {
                     navController.graph.startDestinationRoute?.let {
