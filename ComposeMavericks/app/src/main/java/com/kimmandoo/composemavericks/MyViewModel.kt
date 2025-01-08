@@ -3,8 +3,9 @@ package com.kimmandoo.composemavericks
 import com.airbnb.mvrx.MavericksViewModel
 
 class MyViewModel(initialState: MyState) : MavericksViewModel<MyState>(initialState) {
-
+    // 이게 진짜 좋은 코드가 맞는지?
     fun loadData() {
+
         setState { copy(isLoading = true) }
 
         // 예시 데이터 로드 (비동기 작업이 될 수도 있음)
